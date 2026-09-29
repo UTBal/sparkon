@@ -1,10 +1,20 @@
-# Eureka · dual-version demo
+# SparkON
 
-Selector home page with two Eureka static builds:
+Static SparkON / Eureka dual-site for GitHub Pages.
 
-- **Version 1** (`/v1/`) — earlier build (2026-09-24)
-- **Version 2** (`/v2/`) — about page and working QR codes (2026-09-29)
+## URLs (after rename to `sparkon`)
 
-Click the Demo site badge (bottom-right) to switch between versions.
+| Site | Path |
+|------|------|
+| **SparkON** (primary) | https://utbal.github.io/sparkon/ |
+| **SparkON** alias | https://utbal.github.io/sparkon/v2/ |
+| **Eureka** Version 1 | https://utbal.github.io/sparkon/v1/ |
+
+- Repository root serves **SparkON** (former Eureka Version 2), with SparkON wordmark branding.
+- `/v1/` remains the original **Eureka** build (unchanged).
+- `/v2/` is kept as a SparkON mirror/alias of the same build.
+- Use the “Demo site” control (bottom-right) to switch SparkON ↔ Eureka.
 
 Enable GitHub Pages from the `main` branch root.
+
+Lab Duel climb-tag unlock experiment is **not** wired (implementation hold).

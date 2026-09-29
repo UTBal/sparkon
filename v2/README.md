@@ -1,3 +1,3 @@
-# Eureka demo site
+# SparkON
 
-Static site. Put these files in a GitHub repository and turn on GitHub Pages (Settings → Pages → Deploy from branch → main / root).
+Static SparkON site (formerly Eureka Version 2). Primary site lives at the repository root; this `/v2/` tree is kept as an alias.

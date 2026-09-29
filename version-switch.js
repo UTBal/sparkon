@@ -1,38 +1,79 @@
-/*! Eureka version switcher — toggles /v1/ ↔ /v2/ from the Demo site control. */
+/*! SparkON / Eureka version switcher — toggles SparkON (root or /v2/) ↔ Eureka (/v1/). */
 (function () {
-  // Small recycle mark inline with the Demo site label.
   var RECYCLE_ICON = '<span class="demo-icon" aria-hidden="true">♻</span>';
 
-  // Pages that exist in only one version (path relative to that version root).
-  // When switching FROM that version on these paths, jump to the other version's index.
-  var ONLY_IN = {
-    v2: { 'cards/pi.html': true, 'about.html': true }
+  // Pages that exist only on SparkON (root / v2). When leaving those, land on Eureka index.
+  var ONLY_ON_SPARKON = {
+    'cards/pi.html': true,
+    'about.html': true
   };
 
-  function parsePath(pathname) {
-    var m = pathname.match(/^(.*)\/(v[12])(?:\/(.*))?$/);
-    if (!m) return null;
-    var rest = m[3] || '';
+  function normalizeRest(rest) {
+    rest = rest || '';
     if (rest === '' || rest.charAt(rest.length - 1) === '/') {
       rest = rest + 'index.html';
     }
-    return { prefix: m[1], version: m[2], rest: rest };
+    return rest;
+  }
+
+  // Returns { prefix, kind: 'root'|'v1'|'v2', rest }
+  // prefix is the repo Pages base, e.g. '' or '/sparkon' (no trailing slash).
+  function parsePath(pathname) {
+    var m = pathname.match(/^(.*)\/(v[12])(?:\/(.*))?$/);
+    if (m) {
+      return { prefix: m[1], kind: m[2], rest: normalizeRest(m[3]) };
+    }
+    // Root SparkON pages: /sparkon, /sparkon/, /sparkon/math.html, /sparkon/cards/pi.html
+    // Avoid matching /sparkon/v1/... (already handled above).
+    var m2 = pathname.match(/^(\/[^/]+)(?:\/(.*))?$/);
+    if (m2) {
+      var rest = normalizeRest(m2[2]);
+      // If somehow still a version folder as first segment, ignore — handled above.
+      if (rest === 'v1/index.html' || rest.indexOf('v1/') === 0) return null;
+      if (rest === 'v2/index.html' || rest.indexOf('v2/') === 0) return null;
+      return { prefix: m2[1], kind: 'root', rest: rest };
+    }
+    // Bare / or unusual
+    if (pathname === '/' || pathname === '') {
+      return { prefix: '', kind: 'root', rest: 'index.html' };
+    }
+    return null;
+  }
+
+  function sparkonHref(parsed, rest) {
+    // Prefer repo root as primary SparkON path
+    return parsed.prefix + '/' + rest;
+  }
+
+  function eurekaHref(parsed, rest) {
+    return parsed.prefix + '/v1/' + rest;
   }
 
   function counterpartHref() {
     var parsed = parsePath(location.pathname);
     if (!parsed) return null;
-    var other = parsed.version === 'v1' ? 'v2' : 'v1';
-    var only = ONLY_IN[parsed.version];
-    if (only && only[parsed.rest]) {
-      return parsed.prefix + '/' + other + '/index.html';
+
+    if (parsed.kind === 'v1') {
+      // Eureka → SparkON root (primary). Fall back to index if page is SparkON-only missing on root — root has them.
+      return sparkonHref(parsed, parsed.rest);
     }
-    return parsed.prefix + '/' + other + '/' + parsed.rest;
+
+    // SparkON (root or v2 alias) → Eureka v1
+    var rest = parsed.rest;
+    if (ONLY_ON_SPARKON[rest]) {
+      return eurekaHref(parsed, 'index.html');
+    }
+    return eurekaHref(parsed, rest);
   }
 
   function versionRootIndex(href) {
-    var m = href.match(/^(.*\/v[12])\//);
-    return m ? m[1] + '/index.html' : href.replace(/\/[^/]*$/, '/index.html');
+    // Eureka index
+    var m1 = href.match(/^(.*\/v1)\//);
+    if (m1) return m1[1] + '/index.html';
+    // SparkON root index
+    var m2 = href.match(/^(\/[^/]+)\//);
+    if (m2) return m2[1] + '/index.html';
+    return href.replace(/\/[^/]*$/, '/index.html');
   }
 
   function go() {
@@ -61,8 +102,8 @@
     el.setAttribute('data-version-switch', '1');
     el.setAttribute('role', 'button');
     el.setAttribute('tabindex', '0');
-    el.setAttribute('title', 'Switch to the other Eureka version');
-    el.setAttribute('aria-label', 'Demo site — switch Eureka version');
+    el.setAttribute('title', 'Switch between SparkON and Eureka');
+    el.setAttribute('aria-label', 'Demo site — switch between SparkON and Eureka');
     el.innerHTML = RECYCLE_ICON + '<span class="demo-label">Demo site</span>';
     el.addEventListener('click', function (e) {
       e.preventDefault();
