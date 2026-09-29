@@ -1,3 +1,5 @@
-# Eureka demo site
+# Eureka school edition moved
 
-Static site. Put these files in a GitHub repository and turn on GitHub Pages (Settings → Pages → Deploy from branch → main / root).
+The Eureka school edition now lives at `/eurekav1/`.
+
+HTML stubs in this folder redirect `/v1/...` → `/eurekav1/...`.

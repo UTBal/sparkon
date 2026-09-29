@@ -1,28 +1,14 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Get the cards · Eureka</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css"></head><body>
-<header class="top"><div class="in"><a class="logo" href="index.html"><span>EU</span>REKA</a><nav><a href="index.html" class="">Home</a><a href="math.html" class="">Math</a><a href="physics.html" class="">Physics</a><a href="chemistry.html" class="">Chemistry</a><a href="biology.html" class="">Biology</a><a href="lab-duel.html" class="">Lab Duel</a><a href="timeline.html" class="">Timeline</a><a class="buy" href="order.html">Get the cards</a></nav></div></header>
-<main><h1>Get the cards</h1>
-<p class="lead">The website stays free. The cards are what we sell. Orders are posted as a letter within Sweden.</p>
-<p class="note"><b>Demo form.</b> Nothing is sent and no one is charged. Prices and postage are estimates until we have checked real costs.</p>
-<form id="f" onsubmit="event.preventDefault();done()">
-<div class="row"><div><b>Starter deck</b><br><span style="color:var(--muted);font-size:15px">20 cards incl. one free rare card, rules and 5 challenges</span></div><div>79 kr</div><input type="number" min="0" max="10" value="1" id="q1" oninput="calc()"></div>
-<div class="row"><div><b>Booster pack</b><br><span style="color:var(--muted);font-size:15px">5 random cards</span></div><div>25 kr</div><input type="number" min="0" max="20" value="0" id="q2" oninput="calc()"></div>
-<div class="row"><div>Postage and packaging (estimate)</div><div></div><div id="post">30 kr</div></div>
-<div class="row" style="border:0"><div><b>Total</b></div><div></div><div id="tot"><b>109 kr</b></div></div>
-<label>Name</label><input required autocomplete="name">
-<label>Email</label><input type="email" required autocomplete="email">
-<label>Postal address</label><textarea rows="3" required autocomplete="street-address"></textarea>
-<label>Payment</label><select><option>Swish (you get our Swish number and an order number by email)</option></select>
-<p style="margin-top:18px"><button>Place order</button></p>
-</form>
-<div id="ok" class="note" style="display:none;margin-top:18px"></div>
-<script>
-function calc(){const a=+q1.value||0,b=+q2.value||0,p=(a+b)?30:0;post.textContent=p+' kr';tot.innerHTML='<b>'+(a*79+b*25+p)+' kr</b>';return a*79+b*25+p}
-function done(){const t=calc();ok.style.display='block';ok.innerHTML='<b>Demo only, no order was sent.</b> In the real shop you would now get an order number and pay '+t+' kr by Swish, and the cards would be posted within a few days.'}
-</script></main>
-<footer><div class="in">Eureka · free study pages, collectible knowledge cards · a student business project, written by Daniel and Leo. All explanations are our own.</div></footer>
-<div class="demo"><span class="demo-icon" aria-hidden="true">♻</span></div>
-<script src="../version-switch.js" defer></script>
-</body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eureka · redirect</title>
+<meta http-equiv="refresh" content="0;url=../eurekav1/order.html">
+<link rel="canonical" href="../eurekav1/order.html">
+<script>location.replace('../eurekav1/order.html');</script>
+</head>
+<body>
+<p>Moved to <a href="../eurekav1/order.html">../eurekav1/order.html</a>.</p>
+</body>
+</html>
