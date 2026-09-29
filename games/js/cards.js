@@ -60,7 +60,8 @@ export function renderOriginalCard(conceptId, { compact = false } = {}) {
 export function renderEditionCard(instance) {
   const c = CONCEPTS.find(x => x.id === instance.conceptId);
   if (!c) return el('div', '', 'Unknown');
-  const card = el('article', `science-card ${instance.edition} subject-${c.subject.toLowerCase()}`);
+  const edClass = (instance.edition === 'basic' || instance.edition === 'standard') ? 'standard' : instance.edition;
+  const card = el('article', `science-card ${edClass} subject-${c.subject.toLowerCase()}`);
   const body = el('div', 'card-hit');
   const top = el('div', 'card-top');
   top.append(el('span', 'mini-wordmark', 'SPARK⏻N'), el('span', 'subject-name', c.subject.toUpperCase()));
@@ -86,7 +87,7 @@ export function renderEditionCard(instance) {
   copy.append(el('h3', '', c.name), el('p', 'formula', c.formula));
   const foot = el('div', 'card-foot');
   foot.append(
-    el('span', '', instance.edition === 'hero' ? '✧ Hero' : instance.edition === 'premium' ? '✦ Premium' : 'Original'),
+    el('span', '', instance.edition === 'hero' ? '✧ Hero' : instance.edition === 'premium' ? '✦ Premium' : ''), // standard: site shiny, no edition label
     el('span', '', c.id)
   );
   body.append(top, art, copy, foot);

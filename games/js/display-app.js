@@ -67,7 +67,7 @@ function showBoard(room, members, answers) {
     if (round?.discussion) {
       const d = document.createElement('p');
       d.className = 'muted';
-      d.textContent = 'Talk together: ' + round.discussion;
+      d.textContent = 'Explain-it (not scored): ' + round.discussion;
       extra.append(d);
     }
     if (phase === 'scores' || room.scores) {

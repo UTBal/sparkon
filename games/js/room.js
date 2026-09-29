@@ -132,13 +132,13 @@ export async function requestJoin({ code, nickname, homeLabel = '' } = {}) {
   }
   if (approved.length >= MAX_PLAYERS) throw new Error('Room is full (5 players).');
   const nick = (nickname || 'Player').trim().slice(0, 24) || 'Player';
-  // Host-approve gate: auto-approve for family pilot convenience when under cap; host can kick.
-  const auto = approved.length < MAX_PLAYERS;
+  // Host must approve joiners (link/code discovery is not membership). Cap checked on approve too.
+  if (members.length >= MAX_PLAYERS + 3) throw new Error('Too many pending joiners. Ask the host.');
   await f.setDoc(f.doc(db, ROOMS, roomId, 'members', uid), {
     nickname: nick,
     homeLabel: homeLabel || '',
     ready: false,
-    approved: auto,
+    approved: false,
     isHost: false,
     isGuest: isGuest(),
     connected: true,
@@ -146,7 +146,7 @@ export async function requestJoin({ code, nickname, homeLabel = '' } = {}) {
   });
   sessionStorage.setItem('sparkonRoomId', roomId);
   sessionStorage.setItem('sparkonMemberId', uid);
-  return { roomId, code: clean, memberId: uid, pending: !auto };
+  return { roomId, code: clean, memberId: uid, pending: true };
 }
 
 export async function setReady(roomId, memberId, ready) {
@@ -158,6 +158,11 @@ export async function setReady(roomId, memberId, ready) {
 export async function approveMember(roomId, memberId, approved = true) {
   await whenReady();
   const f = fsMod(), db = getDb();
+  if (approved) {
+    const membersSnap = await f.getDocs(f.collection(db, ROOMS, roomId, 'members'));
+    const approvedCount = membersSnap.docs.filter(d => d.data().approved).length;
+    if (approvedCount >= MAX_PLAYERS) throw new Error('Room is full (5 players).');
+  }
   await f.updateDoc(f.doc(db, ROOMS, roomId, 'members', memberId), { approved: !!approved });
 }
 

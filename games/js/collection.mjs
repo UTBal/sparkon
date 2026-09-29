@@ -9,7 +9,7 @@ export const CONCEPTS = [
   { id:'percent', name:'Percent', subject:'Math', formula:'25% = 25 / 100', rule:'A percentage change uses the stated starting amount.', symbol:'%' },
   { id:'newton2', name:'Force', subject:'Physics', formula:'Fnet = ma', rule:'Use the combined force on an object of constant mass.', symbol:'F' },
   { id:'ohm', name:'Ohm’s law', subject:'Physics', formula:'V = IR', rule:'An ohmic resistor under constant physical conditions.', symbol:'Ω' },
-  { id:'density', name:'Density', subject:'Physics', formula:'ρ = m / V', rule:'Mass divided by volume; compare average densities for floating.', symbol:'ρ' },
+  { id:'density', name:'Density', subject:'Chemistry', formula:'ρ = m / V', rule:'Mass divided by volume; compare average densities for floating.', symbol:'ρ' },
   { id:'oxygen', name:'Oxygen', subject:'Chemistry', formula:'O₂ · two atoms', rule:'Each oxygen atom has 8 protons.', symbol:'O₂' },
   { id:'photosynthesis', name:'Photosynthesis', subject:'Biology', formula:'Light → chemical energy', rule:'Plants build sugars from carbon dioxide and water.', symbol:'☀' },
   { id:'speed', name:'Average speed', subject:'Physics', formula:'vavg = distance / time', rule:'Total distance divided by elapsed time.', symbol:'v' },
@@ -23,31 +23,33 @@ export function hasPremium(collection){return collection.some(c => c.edition ===
 export function resolvedTheme(preference, collection) {
   if(preference==='hero' && hasHero(collection)) return 'hero';
   if(preference === 'premium' && hasPremium(collection)) return 'premium';
-  return 'basic'; // Original
+  return 'basic'; // Original / standard site shiny (no edition label)
 }
 export function random01() {
   const max = 0x100000000;
   return crypto.getRandomValues(new Uint32Array(1))[0] / max;
 }
 export function drawPack(kind, rng = random01, id = () => crypto.randomUUID()) {
-  if (!['basic','premium','hero','mixed'].includes(kind)) throw new Error('Unknown pack');
-  const mixedRoll=kind==='mixed'?rng():1;
-  const mixedEdition=mixedRoll<.05?'hero':mixedRoll<.20?'premium':null; // provisional: 5% Hero, 15% Premium, 80% Original
-  const bonus = kind === 'basic' && rng() < BASIC_PREMIUM_CHANCE;
+  // Free packs only in pilot. kind 'basic'|'standard'|'mixed' = free; premium/hero cosmetics if already wired.
+  if (!['basic','standard','premium','hero','mixed'].includes(kind)) throw new Error('Unknown pack');
+  const free = kind === 'basic' || kind === 'standard' || kind === 'mixed';
+  const mixedRoll = kind === 'mixed' ? rng() : 1;
+  const mixedEdition = mixedRoll < .05 ? 'hero' : mixedRoll < .20 ? 'premium' : null; // provisional demo odds
+  const bonus = (kind === 'basic' || kind === 'standard') && rng() < BASIC_PREMIUM_CHANCE;
   const bonusSlot = (bonus || mixedEdition) ? Math.floor(rng() * PACK_SIZE) : -1;
   return Array.from({length:PACK_SIZE}, (_, i) => {
-    const edition = kind==='hero'?'hero':kind==='premium'?'premium':i===bonusSlot?(mixedEdition||'premium'):'basic';
-    const pool = edition==='hero'?HERO_POOL:edition === 'premium' ? PREMIUM_POOL : CONCEPTS;
+    const edition = kind === 'hero' ? 'hero' : kind === 'premium' ? 'premium' : i === bonusSlot ? (mixedEdition || 'premium') : 'standard';
+    const pool = edition === 'hero' ? HERO_POOL : edition === 'premium' ? PREMIUM_POOL : CONCEPTS;
     const concept = pool[Math.floor(rng() * pool.length)];
     if (concept.id === 'pi') throw new Error('π must never enter random packs');
-    return { instanceId:id(), conceptId:concept.id, edition, themeId:'sparkon', sourcePack:kind };
+    return { instanceId:id(), conceptId:concept.id, edition, themeId:'sparkon', sourcePack:kind, freePack: free || kind === 'premium' || kind === 'hero' };
   });
 }
 export function starterCollection(uid) {
   return CONCEPTS.map(c => ({
     instanceId:`${uid}-${c.id}-starter`,
     conceptId:c.id,
-    edition:'basic',
+    edition:'standard',
     themeId:'sparkon',
     sourcePack:'starter'
   }));

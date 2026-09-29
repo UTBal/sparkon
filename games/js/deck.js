@@ -45,7 +45,7 @@ export async function loadOrCreateCollection(uid) {
       batch.set(profile, {
         themePref: 'basic',
         entitlements: { premiumTheme: false, heroTheme: false },
-        packVersion: '0.1.1-pilot',
+        packVersion: '0.2.0-rc1',
         updatedAt: f.serverTimestamp()
       }, { merge: true });
       await batch.commit();

@@ -3,7 +3,8 @@ import {
 } from './auth.js';
 import {
   createRoom, requestJoin, setReady, watchRoom, hostAdvance, submitAnswer,
-  attachDisplayToRoom, markConnected, currentPlayerId, ensureUserProfile, MAX_PLAYERS
+  attachDisplayToRoom, markConnected, currentPlayerId, ensureUserProfile, MAX_PLAYERS,
+  approveMember
 } from './room.js';
 import { loadOrCreateCollection } from './deck.js';
 import { loadAnswerKey, gradeAll } from './host-score.js';
@@ -63,6 +64,7 @@ function renderLobby() {
   const slots = $('playerSlots');
   slots.replaceChildren();
   const approved = members.filter(m => m.approved);
+  const pending = members.filter(m => !m.approved);
   for (let i = 0; i < MAX_PLAYERS; i++) {
     const m = approved[i];
     const div = document.createElement('div');
@@ -75,6 +77,33 @@ function renderLobby() {
     }
     slots.append(div);
   }
+  const pendingBox = $('pendingJoiners');
+  if (pendingBox) {
+    pendingBox.replaceChildren();
+    const host = isHost();
+    if (pending.length) {
+      const h = document.createElement('h2');
+      h.textContent = host ? 'Waiting for your approve' : 'Pending';
+      pendingBox.append(h);
+      pending.forEach(m => {
+        const row = document.createElement('div');
+        row.className = 'slot';
+        row.innerHTML = `<div class="nick">${escape(m.nickname)}</div><div class="meta">Waiting for host approve${m.homeLabel ? ' · Home ' + escape(m.homeLabel) : ''}</div>`;
+        if (host) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'primary';
+          btn.textContent = 'Approve';
+          btn.onclick = async () => {
+            try { await approveMember(room.id, m.id, true); }
+            catch (e) { alert(e.message || String(e)); }
+          };
+          row.append(btn);
+        }
+        pendingBox.append(row);
+      });
+    }
+  }
   $('displayCount').textContent = `${displays.length} / 2`;
   $('displayWarn').textContent = displays.length < 2
     ? 'Tip: pair both TVs when ready. Missing displays warn only.'
@@ -84,10 +113,17 @@ function renderLobby() {
   $('btnPairTv').disabled = !host && displays.length >= 2;
   const allReady = approved.length >= 1 && approved.every(m => m.ready);
   $('btnStart').disabled = !(host && allReady);
-  $('lobbyStatus').textContent = host
-    ? (allReady ? 'Everyone ready — you can start.' : 'Waiting for ready…')
-    : (me()?.ready ? 'Ready — waiting for host.' : 'Tap I’m ready when you are.');
-  $('btnReady').textContent = me()?.ready ? 'Unready' : "I'm ready";
+  const self = me();
+  if (self && !self.approved) {
+    $('lobbyStatus').textContent = 'Waiting for the host to approve you…';
+    $('btnReady').disabled = true;
+  } else {
+    $('btnReady').disabled = false;
+    $('lobbyStatus').textContent = host
+      ? (pending.length ? `${pending.length} waiting for approve.` : (allReady ? 'Everyone ready — you can start.' : 'Waiting for ready…'))
+      : (self?.ready ? 'Ready — waiting for host.' : "Tap I'm ready when you are.");
+  }
+  $('btnReady').textContent = self?.ready ? 'Unready' : "I'm ready";
 }
 
 function renderRound() {
@@ -132,11 +168,17 @@ function renderRound() {
     const cards = cardsById();
     const opt = round.options.find(o => o.id === rev.correctOption);
     const mine = myAns ? gradeLocal(room.roundId, myAns) : null;
+    const approvedPlayers = members.filter(m => m.approved);
+    const explainer = approvedPlayers.length
+      ? approvedPlayers[(idx || 0) % approvedPlayers.length]
+      : null;
+    const spark = mine && mine.total === 2;
     $('revealPanel').innerHTML = `
-      <h2>${mine ? (mine.total === 2 ? 'Spark on! +2' : `+${mine.total} point${mine.total === 1 ? '' : 's'}`) : 'Reveal'}</h2>
-      <p><strong>${escape(cards[rev.correctConcept]?.title || '')}</strong> · ${escape(opt?.text || rev.correctOption || '')}</p>
+      <h2 class="${spark ? 'spark-on' : ''}">${mine ? (spark ? 'Spark on! +2' : `+${mine.total} point${mine.total === 1 ? '' : 's'}`) : 'Reveal'}</h2>
+      <p><strong>Concept:</strong> ${escape(cards[rev.correctConcept]?.title || '')}</p>
+      <p><strong>Answer:</strong> ${escape(opt?.text || rev.correctOption || '')}</p>
       <p>${escape(rev.explanation || '')}</p>
-      <p class="muted">Talk together: ${escape(round.discussion || '')}</p>`;
+      <p class="muted">${escape(explainer ? ('Explain-it (not scored) · ' + explainer.nickname + ' — ' + (round.discussion || '')) : ('Explain-it (not scored): ' + (round.discussion || '')))}</p>`;
     if (room.phase === 'scores') appendScoreTable($('revealPanel'));
     $('btnHostNext').textContent = idx >= rounds.length - 1 ? 'Host: finish' : 'Host: next round';
   }
@@ -281,13 +323,14 @@ $('btnCreate').onclick = async () => {
 
 $('btnJoin').onclick = async () => {
   try {
-    const { roomId } = await requestJoin({
+    const joined = await requestJoin({
       code: $('joinCode').value,
       nickname: $('nick').value.trim() || 'Player',
       homeLabel: $('home').value.trim()
     });
     if (getAuth()?.currentUser) await loadOrCreateCollection(getAuth().currentUser.uid);
-    attachWatch(roomId);
+    attachWatch(joined.roomId);
+    if (joined.pending) $('lobbyStatus') && ($('lobbyStatus').textContent = 'Joined — waiting for host approve…');
   } catch (e) {
     alert(e.message || String(e));
   }

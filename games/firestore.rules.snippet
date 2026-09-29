@@ -28,7 +28,7 @@ service cloud.firestore {
         allow create: if isSelf(uid)
           && request.resource.data.conceptId is string
           && request.resource.data.conceptId != 'pi'
-          && request.resource.data.edition in ['basic','premium','hero'];
+          && request.resource.data.edition in ['basic','standard','premium','hero'];
         allow update, delete: if false;
       }
     }

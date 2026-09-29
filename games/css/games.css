@@ -86,3 +86,13 @@ html[data-theme=premium] .logo-swap,html[data-theme=hero] .logo-swap{content:url
 .reconnecting{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);background:#3a2a10;color:var(--accent);padding:10px 18px;border-radius:999px;z-index:50;font-weight:700}
 @media(max-width:380px){.wrap{padding:12px}.grid2{gap:8px}button{padding:10px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto;animation:none!important;transition:none!important}}
+
+.spark-on {
+  display: inline-block;
+  padding: .35rem .75rem;
+  border-radius: 999px;
+  background: linear-gradient(120deg, #ffd76a, #ff7ad9 45%, #7ad7ff);
+  color: #111;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
