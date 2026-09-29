@@ -29,7 +29,10 @@ export function currentPlayerId() {
   const u = getAuth()?.currentUser;
   return u ? u.uid : guestId();
 }
-export function isGuest() { return !getAuth()?.currentUser; }
+export function isGuest() {
+  const u = getAuth()?.currentUser;
+  return !u || !!u.isAnonymous;
+}
 
 export async function ensureUserProfile(user) {
   await whenReady();

@@ -78,7 +78,11 @@ function showBoard(room, members, answers) {
       const scores = room.scores || {};
       members.filter(m => m.approved).sort((a, b) => (scores[b.id] || 0) - (scores[a.id] || 0)).forEach(m => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${m.nickname}</td><td>${scores[m.id] || 0}</td>`;
+        const tdNick = document.createElement('td');
+        tdNick.textContent = m.nickname || '';
+        const tdScore = document.createElement('td');
+        tdScore.textContent = String(scores[m.id] || 0);
+        tr.append(tdNick, tdScore);
         tb.append(tr);
       });
       table.append(tb);
@@ -97,7 +101,11 @@ function showBoard(room, members, answers) {
     const scores = room.scores || {};
     members.filter(m => m.approved).sort((a, b) => (scores[b.id] || 0) - (scores[a.id] || 0)).forEach(m => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${m.nickname}</td><td>${scores[m.id] || 0} / 16</td>`;
+      const tdNick = document.createElement('td');
+      tdNick.textContent = m.nickname || '';
+      const tdScore = document.createElement('td');
+      tdScore.textContent = `${scores[m.id] || 0} / 16`;
+      tr.append(tdNick, tdScore);
       tb.append(tr);
     });
     table.append(tb);

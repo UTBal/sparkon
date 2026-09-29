@@ -1,5 +1,5 @@
 import {
-  initialize, whenReady, signIn, signOut, getAuth, initErrorMessage, redirectError, clearRedirectError
+  initialize, whenReady, signIn, signInAnonymously, signOut, getAuth, initErrorMessage, redirectError, clearRedirectError
 } from './auth.js';
 import {
   createRoom, requestJoin, setReady, watchRoom, hostAdvance, submitAnswer,
@@ -20,6 +20,8 @@ let answers = [];
 let unsub = null;
 let selectedConcept = null;
 let selectedOption = null;
+let selectionRoundId = null;
+let drawnHandRoundId = null;
 let myLocked = false;
 let answerKeyLoaded = false;
 
@@ -46,13 +48,16 @@ function me() {
 }
 
 function setAuthUI(user) {
-  $('btnSignIn').classList.toggle('hide', !!user);
-  $('btnSignOut').classList.toggle('hide', !user);
-  if (user) {
+  const isAnon = !!(user && user.isAnonymous);
+  $('btnSignIn').classList.toggle('hide', !!user && !isAnon);
+  $('btnSignOut').classList.toggle('hide', !user || isAnon);
+  if (user && !isAnon) {
     $('authStatus').textContent = `Signed in · deck saves to your account`;
     ensureUserProfile(user).then(() => loadOrCreateCollection(user.uid)).catch(e => {
       $('authStatus').textContent = 'Signed in, but collection sync failed: ' + e.message;
     });
+  } else if (isAnon) {
+    $('authStatus').textContent = 'Continuing as guest · deck will not sync across devices';
   } else {
     $('authStatus').textContent = 'Guest mode · progress is temporary unless you sign in';
   }
@@ -211,8 +216,18 @@ function appendScoreTable(parent) {
 }
 
 function drawHand(round) {
-  selectedConcept = null;
-  selectedOption = null;
+  if (selectionRoundId !== round.id) {
+    selectedConcept = null;
+    selectedOption = null;
+    selectionRoundId = round.id;
+    drawnHandRoundId = null;
+  }
+  // Answer snapshots re-enter renderRound; keep the mounted hand + selection for this round.
+  if (drawnHandRoundId === round.id && $('hand')?.childElementCount) {
+    updateLock();
+    return;
+  }
+  drawnHandRoundId = round.id;
   myLocked = false;
   $('btnLock').disabled = true;
   $('submitStatus').textContent = '';
@@ -224,11 +239,13 @@ function drawHand(round) {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = `concept ${c.subject}`;
+    b.dataset.conceptId = id;
     b.setAttribute('aria-pressed', 'false');
     b.innerHTML = `<span class="badge">${escape(c.subject)}</span><div>${escape(c.title)}</div>`;
     b.onclick = () => {
       if (myLocked) return;
       selectedConcept = id;
+      selectionRoundId = round.id;
       [...hand.children].forEach(n => n.setAttribute('aria-pressed', String(n === b)));
       $('rule').innerHTML = `<strong>${escape(c.title)}</strong><p>${escape(c.rule)}</p><p>${escape(c.example)}</p><p class="muted">${escape(c.condition)}</p>`;
       updateLock();
@@ -241,15 +258,31 @@ function drawHand(round) {
     const b = document.createElement('button');
     b.type = 'button';
     b.textContent = o.text;
+    b.dataset.optionId = o.id;
     b.setAttribute('aria-pressed', 'false');
     b.onclick = () => {
       if (myLocked) return;
       selectedOption = o.id;
+      selectionRoundId = round.id;
       [...opts.children].forEach(n => n.setAttribute('aria-pressed', String(n === b)));
       updateLock();
     };
     opts.append(b);
   });
+  // Re-apply preserved selection after a real remount (e.g. first paint / round change).
+  if (selectedConcept) {
+    const c = cards[selectedConcept];
+    const btn = [...hand.children].find(n => n.dataset.conceptId === selectedConcept);
+    if (btn && c) {
+      [...hand.children].forEach(n => n.setAttribute('aria-pressed', String(n === btn)));
+      $('rule').innerHTML = `<strong>${escape(c.title)}</strong><p>${escape(c.rule)}</p><p>${escape(c.example)}</p><p class="muted">${escape(c.condition)}</p>`;
+    }
+  }
+  if (selectedOption) {
+    const btn = [...opts.children].find(n => n.dataset.optionId === selectedOption);
+    if (btn) [...opts.children].forEach(n => n.setAttribute('aria-pressed', String(n === btn)));
+  }
+  updateLock();
 }
 function updateLock() {
   $('btnLock').disabled = !selectedConcept || !selectedOption || myLocked;
@@ -306,8 +339,14 @@ $('btnSignIn').onclick = async () => {
   }
 };
 $('btnSignOut').onclick = () => signOut();
-$('btnGuest').onclick = () => {
-  $('authStatus').textContent = 'Continuing as guest · deck will not sync across devices';
+$('btnGuest').onclick = async () => {
+  try {
+    $('authStatus').textContent = 'Continuing as guest…';
+    await signInAnonymously();
+    $('authStatus').textContent = 'Continuing as guest · deck will not sync across devices';
+  } catch (e) {
+    $('authStatus').textContent = e.message || initErrorMessage(e);
+  }
 };
 
 $('btnCreate').onclick = async () => {
@@ -444,6 +483,8 @@ $('btnHostNext').onclick = async () => {
     });
     selectedConcept = null;
     selectedOption = null;
+    selectionRoundId = null;
+    drawnHandRoundId = null;
     myLocked = false;
   } catch (e) { alert(e.message); }
 };

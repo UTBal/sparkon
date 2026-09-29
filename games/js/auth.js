@@ -103,4 +103,12 @@ export async function signIn() {
   }
 }
 
+
+export async function signInAnonymously() {
+  await whenReady();
+  if (initError || !auth || !a) throw new Error(formatInitError(initError));
+  await a.setPersistence(auth, a.browserSessionPersistence);
+  await a.signInAnonymously(auth);
+}
+
 export async function signOut() { if (auth) await a.signOut(auth); }
