@@ -113,7 +113,7 @@ button:hover{background:#0077ED}
 .formbox{background:var(--panel);border-radius:22px;padding:8px 26px 26px;box-shadow:0 2px 10px rgba(0,0,0,.04);max-width:680px}
 footer{color:var(--soft);font-size:12px;border-top:1px solid #D2D2D7}
 footer .in{max-width:1024px;margin:0 auto;padding:18px 16px 28px}
-.demo{position:fixed;right:12px;bottom:12px;background:rgba(29,29,31,.8);backdrop-filter:blur(10px);color:#fff;font-size:12px;padding:5px 12px;border-radius:99px}
+.demo{position:fixed;right:12px;bottom:12px;background:rgba(29,29,31,.8);backdrop-filter:blur(10px);color:#fff;font-size:12px;padding:5px 12px;border-radius:99px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none;-webkit-user-select:none}.demo:hover{background:rgba(29,29,31,.95)}.demo:focus-visible{outline:2px solid #fff;outline-offset:2px}.demo .demo-icon{flex:none;display:inline-block;line-height:1;font-size:13px;opacity:.95}
 
 .card{width:63mm;height:88mm;box-sizing:border-box;border-radius:3.4mm;overflow:hidden;position:relative;padding:1.5mm;
   font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',Inter,'Helvetica Neue',Arial,sans-serif;color:#1D1D1F;-webkit-font-smoothing:antialiased;text-align:left;background:linear-gradient(160deg,#FFFFFF,#D9D9DE);
