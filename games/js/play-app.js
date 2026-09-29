@@ -503,8 +503,15 @@ $('btnReady').onclick = async () => {
 async function pairTvFromInput(inputEl, statusEl) {
   if (!room || !isHost()) { alert('Only the host pairs TVs.'); return; }
   if (room.phase === 'finished') { alert('Game finished — start a new room to pair TVs.'); return; }
+  const code = String(inputEl?.value || '').trim();
+  if (!code) {
+    const msg = 'Enter the 4-digit code shown on the TV.';
+    if (statusEl) statusEl.textContent = msg;
+    alert(msg);
+    return;
+  }
   try {
-    await attachDisplayToRoom(room.id, inputEl.value);
+    await attachDisplayToRoom(room.id, code);
     inputEl.value = '';
     if (statusEl) statusEl.textContent = 'TV paired.';
     if ($('lobbyStatus')) $('lobbyStatus').textContent = 'TV paired.';

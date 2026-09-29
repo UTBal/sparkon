@@ -230,6 +230,8 @@ export async function attachDisplayToRoom(roomId, displayCode) {
   await ensureSignedIn();
   const f = fsMod(), db = getDb();
   const code = String(displayCode || '').trim();
+  // Empty path segment → Firestore "odd number of segments" on sparkonDisplayCodes alone
+  if (!code) throw new Error('Enter the 4-digit code shown on the TV.');
   const codeRef = f.doc(db, DISPLAY_CODES, code);
   const snap = await f.getDoc(codeRef);
   if (!snap.exists() || snap.data().status !== 'waiting') throw new Error('Display code not found or already paired.');
