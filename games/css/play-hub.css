@@ -1,0 +1,25 @@
+.play-hub{font-family:Inter,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.hub-main{max-width:1240px;margin:auto;padding:0 40px}
+.hub-hero{display:grid;grid-template-columns:1.3fr 1fr;align-items:center;gap:64px;padding:68px 0 60px;min-height:590px}
+.hub-eyebrow{font-size:10px;letter-spacing:.19em;color:var(--scene-accent);font-weight:500;margin:0 0 26px}
+.hub-copy h1{font-size:clamp(48px,6.7vw,84px);line-height:1.02;font-weight:500;letter-spacing:-.06em;margin:0 0 26px}
+.hub-lead{color:var(--muted);font-size:17px;line-height:1.65;max-width:440px;margin:0 0 30px}
+.hub-actions{display:flex;flex-direction:column;align-items:flex-start;gap:20px}
+.hub-primary{display:inline-flex;align-items:center;gap:32px;background:var(--scene-accent,#1d1d1f);color:#08090b!important;padding:15px 20px;border-radius:7px;text-decoration:none;font-size:14px;font-weight:600;min-height:48px}
+.hub-primary span{font-size:20px;line-height:1}.hub-text-link{font-size:13px;color:var(--ink);text-decoration:none}
+.hub-facts{font-size:11px;color:var(--muted);margin-top:26px}.hub-facts span{margin:0 6px}
+.hub-art{position:relative;text-align:center;padding:12px 18px}.hub-art:before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse,var(--scene-accent),transparent 66%);opacity:.09;pointer-events:none}
+.hub-art .site-art-showcase{position:relative;max-width:285px}.hub-art>p{font-size:10px;letter-spacing:.035em;color:var(--muted);margin:22px 0 0}
+.hub-original{aspect-ratio:63/88;border:1px solid #c1a15d;border-radius:14px;display:grid;place-items:center;background:radial-gradient(ellipse,#193e58,#060b16);font:180px Georgia,serif;color:#f0d893}
+.hub-destinations{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.hub-destination{padding:30px 28px 32px 0;text-decoration:none;color:var(--ink);min-width:0}.hub-destination+.hub-destination{padding-left:28px;border-left:1px solid var(--line)}
+.hub-number{font-size:9px;letter-spacing:.15em;color:var(--scene-accent)}
+.hub-destination h2{display:flex;justify-content:space-between;gap:12px;font-size:20px;line-height:1.25;font-weight:500;letter-spacing:-.03em;margin:20px 0 12px}.hub-destination h2 span{color:var(--scene-accent);font-size:17px}
+.hub-destination p{font-size:13px;line-height:1.7;color:var(--muted);margin:0;max-width:255px}.hub-destination:hover h2{color:var(--scene-accent)}
+.hub-how{display:grid;grid-template-columns:1fr 1.5fr;gap:64px;padding:66px 0}.hub-how h2{font-size:36px;font-weight:500;letter-spacing:-.045em;line-height:1.12;margin:0}.hub-how ol{margin:0;padding-left:24px}.hub-how li{padding:0 0 20px 16px;color:var(--scene-accent);font-size:13px}.hub-how b{color:var(--ink);font-size:15px;font-weight:500}.hub-how li p{color:var(--muted);line-height:1.7;margin:8px 0 0}
+.hub-pilot{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding:20px 0 30px}.hub-pilot summary{cursor:pointer}.hub-pilot p{max-width:750px;line-height:1.7}
+.hub-footer{max-width:1240px;margin:auto;padding:26px 40px;display:flex;justify-content:space-between;gap:20px;border-top:1px solid var(--line);font-size:9px;letter-spacing:.12em}.hub-footer a{color:var(--muted);text-decoration:none}
+.play-hub a:focus-visible{outline:2px solid var(--scene-accent);outline-offset:6px}
+html[data-theme=original] .hub-primary{background:#20242c;color:white!important}html[data-theme=original] .play-hub{--scene-accent:#91733e}
+@media(max-width:800px){.hub-main{padding:0 24px}.hub-hero{gap:24px;padding:44px 0}.hub-copy h1{font-size:52px}.hub-lead{font-size:15px}.hub-art{padding:0}.hub-how{gap:30px}.hub-destination{padding-right:18px}.hub-destination+.hub-destination{padding-left:18px}.hub-destination h2{font-size:17px}}
+@media(max-width:540px){.hub-main{padding:0 20px}.hub-hero{grid-template-columns:1fr;padding:36px 0 32px;gap:32px}.hub-copy h1{font-size:57px}.hub-eyebrow{font-size:9px;margin-bottom:22px}.hub-art .site-art-showcase{max-width:200px}.hub-art>p{margin-top:15px}.hub-destinations{grid-template-columns:1fr}.hub-destination,.hub-destination+.hub-destination{padding:24px 0;border-left:0}.hub-destination+.hub-destination{border-top:1px solid var(--line)}.hub-destination h2{font-size:22px;margin:12px 0 8px}.hub-destination p{max-width:none}.hub-how{grid-template-columns:1fr;padding:40px 0;gap:30px}.hub-how h2{font-size:34px}.hub-footer{padding:22px 20px;flex-direction:column;gap:12px}}

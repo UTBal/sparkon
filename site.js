@@ -31,8 +31,8 @@
  */
 
 (function () {
-  var tilts = Array.prototype.slice.call(document.querySelectorAll('.tilt'));
-  if (!tilts.length) return;
+  var tilts = [];
+  var boundTilts = new WeakSet();
 
   var reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var orientActive = false;
@@ -49,7 +49,7 @@
       c.style.setProperty('--mx', (x * 100) + '%');
       c.style.setProperty('--my', (y * 100) + '%');
     });
-    el.style.transform =
+    el.style.transform = reduceMotion ? '' :
       'perspective(900px) rotateY(' + ((x - 0.5) * 16) + 'deg) rotateX(' + ((0.5 - y) * 16) + 'deg) scale(1.03)';
   }
 
@@ -63,7 +63,9 @@
   }
 
   /* —— Pointer: desktop hover + touch-drag —— */
-  tilts.forEach(function (el) {
+  function bindTilt(el) {
+    if (boundTilts.has(el)) return;
+    boundTilts.add(el);
     el.addEventListener('pointerdown', function (e) {
       if (e.pointerType === 'touch' || e.pointerType === 'pen') {
         try { el.setPointerCapture(e.pointerId); } catch (_) {}
@@ -96,7 +98,14 @@
     el.addEventListener('pointerleave', function (e) {
       if (e.pointerType === 'mouse' || e.pointerType === '') endPointer(e);
     });
-  });
+  }
+  function refreshTilts() {
+    tilts = Array.prototype.slice.call(document.querySelectorAll('.tilt'));
+    tilts.forEach(bindTilt);
+  }
+  refreshTilts();
+  // Collections, galleries and live hands insert cards after the initial page load.
+  new MutationObserver(refreshTilts).observe(document.body, {childList:true, subtree:true});
 
   /* —— Device orientation (phone tilt) —— */
   function onOrient(e) {
