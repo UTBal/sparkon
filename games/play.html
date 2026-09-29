@@ -11,7 +11,7 @@
 </head>
 <body>
 <header class="app">
-  <a href="/games/"><img class="logo" id="logo" src="/games/assets/logo-original.svg" alt="SparkON" width="130" height="34"></a>
+  <a data-logo-link href="/"><img class="logo" id="logo" src="/games/assets/logo-original.svg" alt="SparkON" width="130" height="34"></a>
   <nav>
     <span id="accountChip" class="account-chip" aria-live="polite">Guest</span>
     <button type="button" id="btnSignIn">Google sign-in</button>
@@ -111,5 +111,6 @@
 </main>
 <div id="reconnect" class="reconnecting hide" role="status">Reconnecting…</div>
 <script type="module" src="/games/js/play-app.js"></script>
+<script src="/site.js" defer></script>
 </body>
 </html>

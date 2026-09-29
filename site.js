@@ -1,3 +1,29 @@
+/* SparkON shared site behavior
+ * The logo returns to the page's home URL. On home, add a cache-busting
+ * query so a logo click performs a fresh document navigation.
+ */
+(function () {
+  function homePath(pathname) {
+    pathname = pathname.replace(/\/+$/, '');
+    return pathname === '' || pathname === '/index.html' || /\/index\.html$/.test(pathname)
+      ? pathname.replace(/\/index\.html$/, '') + '/index.html'
+      : pathname + '/index.html';
+  }
+
+  document.querySelectorAll('a.logo, a[data-logo-link]').forEach(function (logo) {
+    logo.addEventListener('click', function (event) {
+      var target = new URL(logo.getAttribute('href') || '/', document.baseURI);
+      var currentPath = homePath(window.location.pathname);
+      var targetPath = homePath(target.pathname);
+      if (currentPath !== targetPath) return;
+
+      event.preventDefault();
+      target.search = 't=' + Date.now();
+      window.location.href = target.href;
+    });
+  });
+})();
+
 /* SparkON card tilt + holographic shine
  * Desktop: pointermove (mouse hover) — unchanged behavior.
  * Mobile: DeviceOrientation (tilt phone) + touch-drag with pointer capture.
