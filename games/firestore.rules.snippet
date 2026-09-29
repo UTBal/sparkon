@@ -1,0 +1,83 @@
+// REQUIRED for SparkON pilot on board-18d33 — deploy WITHOUT weakening users/{uid}/notes.
+// Paste into Firebase Console → Firestore → Rules (merge with existing Board rules),
+// or deploy via CLI when authenticated. NEVER grant clients write to scores/reveal as
+// production security; this pilot is HOST-TRUSTED and intentionally permissive for staging.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===== existing Whiteboard (KEEP) =====
+    // match /users/{uid}/notes/{noteId} { ... existing ... }
+
+    function signedIn() { return request.auth != null; }
+    function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
+
+    // Profile + entitlements (UID-owned)
+    match /sparkonUsers/{uid} {
+      allow read: if isSelf(uid);
+      allow create, update: if isSelf(uid)
+        && (!('entitlements' in request.resource.data)
+            || request.resource.data.entitlements.keys().hasOnly(['premiumTheme','heroTheme']));
+      // Pilot: allow owner write of themePref / packVersion fields
+      allow delete: if false;
+
+      match /collection/{instanceId} {
+        allow read: if isSelf(uid);
+        // Pilot client mint — NOT production-safe (RNG on client)
+        allow create: if isSelf(uid)
+          && request.resource.data.conceptId is string
+          && request.resource.data.conceptId != 'pi'
+          && request.resource.data.edition in ['basic','premium','hero'];
+        allow update, delete: if false;
+      }
+    }
+
+    // Room code directory
+    match /sparkonCodes/{code} {
+      allow read: if true;
+      allow create: if signedIn() || true; // guests allowed in pilot
+      allow update, delete: if false;
+    }
+
+    match /sparkonDisplayCodes/{code} {
+      allow read: if true;
+      allow create, update: if true; // TV pairing (no auth on TV)
+      allow delete: if false;
+    }
+
+    match /sparkonRooms/{roomId} {
+      allow read: if true; // pilot: code secrecy is discovery control; tighten later
+      allow create: if true;
+      // Host advances phase/scores — HOST-TRUSTED pilot (client-trusted hostUid)
+      allow update: if resource.data.hostUid == request.auth.uid
+        || resource.data.hostUid == request.resource.data.hostUid; // guest host via same browser session id — see caveats
+      // Guests: hostUid is guest-* string; Auth may be null — pilot allows update if hostUid unchanged and present in request
+      allow update: if request.resource.data.hostUid == resource.data.hostUid;
+      allow delete: if false;
+
+      match /members/{memberId} {
+        allow read: if true;
+        allow create, update: if true; // pilot
+        allow delete: if false;
+      }
+      match /answers/{answerId} {
+        allow read: if true; // host needs aggregate; tighten to member+host later
+        allow create: if true
+          && request.resource.data.locked == true;
+        allow update, delete: if false; // lock once
+      }
+      match /displays/{displayId} {
+        allow read: if true;
+        allow create, update: if true;
+        allow delete: if false;
+      }
+    }
+  }
+}
+
+    // Optional alternate collection root (still never notes)
+    match /users/{uid}/sparkon/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid
+        && !('notes' in request.resource.keys()); // belt-and-suspenders; path already excludes notes
+    }

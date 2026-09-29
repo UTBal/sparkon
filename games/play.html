@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Phone · SparkON play</title>
+<link rel="icon" href="/icons/favicon.ico" sizes="any">
+<link rel="stylesheet" href="/games/css/games.css">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="app">
+  <a href="/games/"><img class="logo" id="logo" src="/games/assets/logo-original.svg" alt="SparkON" width="130" height="34"></a>
+  <nav>
+    <button type="button" id="btnSignIn">Google sign-in</button>
+    <button type="button" id="btnSignOut" class="hide">Sign out</button>
+    <a class="btn" href="/games/collection.html">Deck</a>
+  </nav>
+</header>
+<main class="wrap">
+  <p id="authStatus" class="muted" aria-live="polite"></p>
+  <div id="view-home">
+    <h1>Phone controller</h1>
+    <p class="muted">Create a room as host, or join with a code. TVs pair separately.</p>
+    <div class="notice host-trust">HOST-TRUSTED pilot: when you host, your browser loads the answer key. Family OK — not ranked/rewards-ready.</div>
+    <label for="nick">Nickname (shown on TVs — not your Google name)</label>
+    <input id="nick" maxlength="24" autocomplete="nickname" placeholder="e.g. Alex">
+    <label for="home">Home A / B (optional)</label>
+    <input id="home" maxlength="12" placeholder="A or B">
+    <div class="actions">
+      <button type="button" class="primary" id="btnCreate">Create room (host)</button>
+    </div>
+    <label for="joinCode">Room code</label>
+    <input id="joinCode" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="ABCDEF">
+    <div class="actions">
+      <button type="button" class="primary" id="btnJoin">Join room</button>
+      <button type="button" id="btnGuest">Continue as guest</button>
+    </div>
+  </div>
+
+  <div id="view-lobby" class="hide">
+    <p class="badge">Lobby · <span id="roomCodeLabel"></span></p>
+    <h1>Players</h1>
+    <div id="playerSlots" class="grid2"></div>
+    <h2>Displays <span class="muted" id="displayCount">0 / 2</span></h2>
+    <p class="muted" id="displayWarn">Missing displays warn only — they never take a player slot.</p>
+    <label for="tvCode">Pair TV code</label>
+    <div class="actions">
+      <input id="tvCode" maxlength="4" inputmode="numeric" placeholder="1234" style="flex:1">
+      <button type="button" id="btnPairTv">Pair TV</button>
+    </div>
+    <div class="actions">
+      <button type="button" id="btnReady">I'm ready</button>
+      <button type="button" class="primary hide" id="btnStart">Start game</button>
+    </div>
+    <p id="lobbyStatus" class="muted" aria-live="polite"></p>
+  </div>
+
+  <div id="view-round" class="hide">
+    <p class="badge" id="roundBadge"></p>
+    <h1 id="roundTitle"></h1>
+    <p id="roundPrompt"></p>
+    <section id="playControls">
+      <h2>1. Choose your science card</h2>
+      <div id="hand" class="grid2"></div>
+      <div id="rule" class="panel" aria-live="polite">Tap a card to read its rule. Open-book play.</div>
+      <h2>2. Choose your answer</h2>
+      <div id="options" class="options"></div>
+      <button type="button" class="primary block" id="btnLock" disabled>Lock answer</button>
+      <p id="submitStatus" class="muted" aria-live="polite"></p>
+    </section>
+    <section id="waitPanel" class="panel hide" aria-live="polite"></section>
+    <section id="revealPanel" class="panel hide" aria-live="polite"></section>
+    <div class="actions">
+      <button type="button" class="primary hide" id="btnHostNext">Host: next</button>
+      <button type="button" class="hide" id="btnHostLock">Host: lock answers</button>
+      <button type="button" class="hide" id="btnHostReveal">Host: reveal</button>
+    </div>
+  </div>
+
+  <div id="view-end" class="hide">
+    <h1>Finished</h1>
+    <div id="finalScores"></div>
+    <div class="actions">
+      <a class="btn primary" href="/games/play.html">Play again</a>
+      <a class="btn" href="/games/collection.html">My deck</a>
+    </div>
+  </div>
+</main>
+<div id="reconnect" class="reconnecting hide" role="status">Reconnecting…</div>
+<script type="module" src="/games/js/play-app.js"></script>
+</body>
+</html>
