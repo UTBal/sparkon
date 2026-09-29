@@ -53,7 +53,12 @@ h3{letter-spacing:-.02em}
 .subj b{font-size:26px;display:block;letter-spacing:-.02em}
 .subj span{opacity:.92;font-size:15px}
 .rarities{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-@media(max-width:900px){.rarities{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){
+  .rarities{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px}
+  .rarity{min-width:0}
+  /* Fixed 63mm cards overflow 2-col cells under ~530px; scale to fit */
+  .rarity .tilt{zoom:min(1,calc((100vw - 44px) / 2 / 63mm))}
+}
 .rarity{text-align:center}
 .rarity .tilt{margin:0 auto}
 .rarity h3{margin:14px 0 2px;font-size:19px}
