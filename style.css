@@ -71,6 +71,7 @@ h3{letter-spacing:-.02em}
 .tile:hover{text-decoration:none}
 .tile .t{font-size:14px;color:var(--muted);margin-top:10px}
 /* card effects on screen */
+.cardpage .tilt{touch-action:none}
 .tilt{display:inline-block;border-radius:3.4mm;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s;transform-style:preserve-3d;box-shadow:0 12px 30px rgba(0,0,0,.14),0 2px 6px rgba(0,0,0,.08)}
 .tilt.live{transition:transform .08s linear}
 .tilt .card .holo{background-size:250% 250%;background-position:var(--mx,30%) var(--my,30%)}
