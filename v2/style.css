@@ -55,12 +55,13 @@ h3{letter-spacing:-.02em}
 .rarities{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
 @media(max-width:900px){
   .rarities{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px}
-  .rarity{min-width:0}
+  .rarity,.rarities>a{min-width:0}
   /* Fixed 63mm cards overflow 2-col cells under ~530px; scale to fit */
-  .rarity .tilt{zoom:min(1,calc((100vw - 44px) / 2 / 63mm))}
+  /* Home uses .rarity wrappers; about nests .tilt under direct <a> children */
+  .rarity .tilt,.rarities>a .tilt{zoom:min(1,calc((100vw - 44px) / 2 / 63mm))}
 }
-.rarity{text-align:center}
-.rarity .tilt{margin:0 auto}
+.rarity,.rarities>a{text-align:center}
+.rarity .tilt,.rarities>a .tilt{margin:0 auto}
 .rarity h3{margin:14px 0 2px;font-size:19px}
 .rarity p{margin:0;color:var(--muted);font-size:15px}
 .rarity .odds{display:inline-block;margin-top:8px;font-size:13px;font-weight:600;padding:3px 10px;border-radius:99px;background:#E8E8ED;color:#1D1D1F}
