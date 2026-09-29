@@ -66,7 +66,7 @@ html[data-theme=original] body[data-sparkon-surface=game] button[aria-pressed=tr
 .site-header .site-skin-bar button{min-width:0;min-height:24px;height:24px;padding:3px 8px!important;font-size:10px;line-height:16px;border:0!important;border-radius:3px;background:transparent!important;color:var(--muted)}
 .site-header .site-skin-bar button[aria-pressed=true]{background:var(--scene-accent,#24262b)!important;color:#08090b}
 html[data-theme=original] .site-header .site-skin-bar button[aria-pressed=true]{background:#24262b!important;color:#fff}
-html:is([data-theme=premium],[data-theme=hero]) .site-header a.logo{background-image:url('/logo-refined.svg');width:152px;height:26px;flex:0 0 152px}
+html:is([data-theme=premium],[data-theme=hero]) .site-header a.logo{background-image:url('/logo-refined.svg?v=power2');width:152px;height:26px;flex:0 0 152px}
 .site-header nav{order:1;flex:1;gap:22px;font-size:13px}
 .site-header nav .nav-play{display:none}
 @media(max-width:1000px){.site-header .in{gap:16px!important}.site-header nav{gap:15px}.site-header .site-more{display:none}}
@@ -81,4 +81,5 @@ html:is([data-theme=premium],[data-theme=hero]) .site-header a.logo{background-i
  .site-header .site-more{display:block}
 }
 @media(max-width:350px){.site-header .in{gap:6px!important;padding-inline:10px!important}html .site-header a.logo{width:96px!important;flex-basis:96px!important}.site-header .site-skin-bar button{padding-inline:6px!important}}
-html:is([data-theme=premium],[data-theme=hero]) header.site-header a.logo{background-image:url('/logo-refined.svg')!important;background-size:contain;background-repeat:no-repeat;background-position:left center}
+html:is([data-theme=premium],[data-theme=hero]) header.site-header a.logo{background-image:url('/logo-refined.svg?v=power2')!important;background-size:contain;background-repeat:no-repeat;background-position:left center}
+
