@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+<title id="title">SparkON app icon</title><desc id="desc">A warm gold power-button ring and small spark on neutral black.</desc>
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#141414"/><stop offset="1" stop-color="#000000"/></linearGradient><linearGradient id="gold" gradientUnits="userSpaceOnUse" x1="150" y1="140" x2="800" y2="850"><stop stop-color="#f3dfaa"/><stop offset=".5" stop-color="#d9b777"/><stop offset="1" stop-color="#b98c4d"/></linearGradient></defs>
+<path fill="url(#bg)" d="M0 0h1024v1024H0z"/>
+<g fill="none" stroke="url(#gold)" stroke-width="43" stroke-linecap="round"><path d="M384 302a246 246 0 1 0 256 0"/><path d="M512 232v231"/></g>
+<path d="M758 208c5 29 14 38 43 43-29 5-38 14-43 43-5-29-14-38-43-43 29-5 38-14 43-43Z" fill="#ead39b"/>
+</svg>
+
+
