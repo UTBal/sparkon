@@ -25,6 +25,18 @@ export function resolvedTheme(preference, collection) {
   if(preference === 'premium' && hasPremium(collection)) return 'premium';
   return 'basic'; // Original / standard site shiny (no edition label)
 }
+/** Preview skin without ownership gating (tonight: full-glory theme switcher). */
+export function previewTheme(preference) {
+  if (preference === 'hero') return 'hero';
+  if (preference === 'premium') return 'premium';
+  return 'basic';
+}
+/** Map theme pref → card edition for renderCardInstance preview. */
+export function themeAsEdition(preference) {
+  if (preference === 'hero') return 'hero';
+  if (preference === 'premium') return 'premium';
+  return 'standard';
+}
 export function random01() {
   const max = 0x100000000;
   return crypto.getRandomValues(new Uint32Array(1))[0] / max;

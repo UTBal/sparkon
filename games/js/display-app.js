@@ -3,9 +3,11 @@ import {
   registerDisplayPairing, watchDisplayPairing, watchRoom,
   loadDisplayBind, saveDisplayBind, touchDisplay
 } from './room.js';
+import { loadCardArt, renderCardInstance } from './cards.js';
 
 const $ = id => document.getElementById(id);
 let pack = null;
+let artReady = false;
 let unsubRoom = null;
 let heartbeatTimer = null;
 
@@ -32,7 +34,7 @@ function showBoard(room, members, answers) {
 
   if (phase === 'lobby') {
     $('title').textContent = 'Waiting in lobby';
-    $('prompt').textContent = `${members.filter(m => m.approved).length} / 5 players · ${(room.publicState?.displayCount) || 0} displays`;
+    $('prompt').textContent = `${members.filter(m => m.approved).length} / 6 players · ${(room.publicState?.displayCount) || 0} displays`;
     const list = document.createElement('ul');
     members.filter(m => m.approved).forEach(m => {
       const li = document.createElement('li');
@@ -68,6 +70,16 @@ function showBoard(room, members, answers) {
       const e = document.createElement('p');
       e.textContent = rev.explanation;
       extra.append(e);
+    }
+    if (artReady && rev.correctConcept) {
+      const wrap = document.createElement('div');
+      wrap.className = 'tv-reveal-card';
+      wrap.append(renderCardInstance({
+        instanceId: `tv-${rev.correctConcept}`,
+        conceptId: rev.correctConcept,
+        edition: 'standard'
+      }, { compact: true }));
+      extra.append(wrap);
     }
     if (round?.discussion) {
       const d = document.createElement('p');
@@ -171,6 +183,7 @@ async function boot() {
     await whenReady();
     await ensureSignedIn();
     await loadPack();
+    try { await loadCardArt(); artReady = true; } catch { artReady = false; }
 
     const bind = loadDisplayBind();
     const user = (await ensureSignedIn());

@@ -13,6 +13,7 @@
 <header class="app">
   <a href="/games/"><img class="logo" id="logo" src="/games/assets/logo-original.svg" alt="SparkON" width="130" height="34"></a>
   <nav>
+    <span id="accountChip" class="account-chip" aria-live="polite">Guest</span>
     <button type="button" id="btnSignIn">Google sign-in</button>
     <button type="button" id="btnSignOut" class="hide">Sign out</button>
     <a class="btn" href="/games/play.html">Play</a>
@@ -21,27 +22,24 @@
 <main class="wrap wide">
   <p class="badge">Collection · cosmetics only</p>
   <h1>My deck</h1>
-  <p class="muted">Same science and scoring in every skin. Original keeps Claude’s shiny cards and the old logo. New logo appears only for unlocked Premium / Hero skins.</p>
+  <p class="muted">Same science and scoring in every skin. Original keeps Claude’s shiny cards and the old logo. Premium / Hero skins use Astra art + new logo. Theme preview is unlocked for tonight — ownership gating returns later.</p>
   <div class="notice host-trust">Pilot pack opens use <strong>client RNG</strong> (provisional odds). π is never in random packs. Production needs a Cloud Function. Not for purchases or ranked inventory.</div>
   <p id="authStatus" class="muted" aria-live="polite"></p>
   <section class="panel">
     <h2>Skin</h2>
     <div class="skin-bar" role="group" aria-label="SparkON skin">
       <button type="button" id="skinOriginal" aria-pressed="true">Original</button>
-      <button type="button" id="skinPremium" aria-pressed="false" disabled>Premium</button>
-      <button type="button" id="skinHero" aria-pressed="false" disabled>Hero</button>
+      <button type="button" id="skinPremium" aria-pressed="false">Premium</button>
+      <button type="button" id="skinHero" aria-pressed="false">Hero</button>
     </div>
-    <p id="skinHelp" class="muted">Own a Premium card to unlock Premium; own a Hero card to unlock Hero.</p>
+    <p id="skinHelp" class="muted">Preview any skin now. Scoring unchanged.</p>
   </section>
   <section class="panel">
     <h2>Open a pack (pilot)</h2>
     <div class="actions">
-      <button type="button" class="open-pack" data-pack="standard">Free standard pack</button>
-      <button type="button" class="open-pack" data-pack="premium">Premium pack</button>
-      <button type="button" class="open-pack" data-pack="hero">Hero pack</button>
-      <button type="button" class="open-pack" data-pack="mixed">Mixed odds pack</button>
+      <button type="button" class="open-pack primary" data-pack="mixed">Open mixed pack</button>
     </div>
-    <p class="muted">Free packs only for this pilot (no purchases). Mixed ≈ 5% Hero, 15% Premium, 80% Standard/Original. Free standard packs: 10% chance of one Premium. No card loss — cards stay in your deck. No π.</p>
+    <p class="muted">Free mixed pack only (no purchases). Mostly Standard/Original, with occasional Premium (~15%) or Hero (~5%) slots. π never appears. Pack opens add cards only — stakes / transfers come later.</p>
   </section>
   <p id="collectionCount" class="muted"></p>
   <div id="cards" class="card-grid"></div>

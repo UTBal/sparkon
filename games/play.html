@@ -7,11 +7,13 @@
 <link rel="stylesheet" href="/games/css/games.css">
 <link rel="stylesheet" href="/style.css">
 <link rel="stylesheet" href="/games/css/standard-cards.css">
+<link rel="stylesheet" href="/games/css/edition.css">
 </head>
 <body>
 <header class="app">
   <a href="/games/"><img class="logo" id="logo" src="/games/assets/logo-original.svg" alt="SparkON" width="130" height="34"></a>
   <nav>
+    <span id="accountChip" class="account-chip" aria-live="polite">Guest</span>
     <button type="button" id="btnSignIn">Google sign-in</button>
     <button type="button" id="btnSignOut" class="hide">Sign out</button>
     <a class="btn" href="/games/collection.html">Deck</a>
@@ -19,9 +21,18 @@
 </header>
 <main class="wrap">
   <p id="authStatus" class="muted" aria-live="polite"></p>
+  <section class="panel play-theme-panel" aria-label="Card theme preview">
+    <h2 class="sr">Theme</h2>
+    <div class="skin-bar" role="group" aria-label="Card theme">
+      <button type="button" id="skinOriginal" aria-pressed="true">Original</button>
+      <button type="button" id="skinPremium" aria-pressed="false">Premium</button>
+      <button type="button" id="skinHero" aria-pressed="false">Hero</button>
+    </div>
+    <p id="skinHelp" class="muted">Preview any skin now — scoring identical. Ownership gating later.</p>
+  </section>
   <div id="view-home">
     <h1>Phone controller</h1>
-    <p class="muted">Create a room as host, or join with a code. TVs pair separately.</p>
+    <p class="muted">Create a room as host, or join with a code. 2–6 players. TVs pair separately.</p>
     <div class="notice host-trust">HOST-TRUSTED pilot: when you host, your browser loads the answer key. Family OK — not ranked/rewards-ready.</div>
     <label for="nick">Nickname (shown on TVs — not your Google name)</label>
     <input id="nick" maxlength="24" autocomplete="nickname" placeholder="e.g. Alex">
@@ -39,7 +50,7 @@
   </div>
 
   <div id="view-lobby" class="hide">
-    <p class="badge">Lobby · <span id="roomCodeLabel"></span></p>
+    <p class="badge">Lobby · <span id="roomCodeLabel"></span> · 2–6 players</p>
     <h1>Players</h1>
     <div id="playerSlots" class="grid2"></div>
     <div id="pendingJoiners"></div>
@@ -63,7 +74,7 @@
     <p id="roundPrompt"></p>
     <section id="playControls">
       <h2>1. Choose your science card</h2>
-      <div id="hand" class="grid2"></div>
+      <div id="hand" class="hand-cards"></div>
       <div id="rule" class="panel" aria-live="polite">Tap a card to read its rule. Open-book play.</div>
       <h2>2. Choose your answer</h2>
       <div id="options" class="options"></div>

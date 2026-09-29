@@ -11,12 +11,12 @@ Pack: **0.2.0-rc1** (`games/data/pack.public.json`). Host answers: `games/host/a
 
 ## What works (intended after Auth domains + Firestore rules)
 
-- On-demand rooms via 6-character codes; host + up to 5 players; host must **approve** joiners; 2 TV displays pair by 4-digit code
+- On-demand rooms via 6-character codes; 2–6 players (start from 2); host must **approve** joiners; 2 TV displays pair by 4-digit code
 - Eight-round main flow R01–R08 (lobby → question → lock → reveal → scores → next → finished); P01–P04 practice
 - Scoring: 1 pt concept + 1 pt answer independent; max 2/round, 16/game; no speed points; ties shared; both correct → **Spark on!** badge
 - Explain-it rotates among approved players; not scored
 - End score table + Play again
-- Free 12-card standard deck; free packs only; no card loss; π out of packs
+- Free 12-card standard deck; mixed pack only (mostly standard, occasional premium/hero); π out of packs; stakes/transfers later
 - Edition field **standard** (site shiny, no edition label); Premium/Hero = Astra cosmetics when unlocked
 - `density` subject = **chemistry**; `kinetic-energy` id (site `cards/energy.html` conservation page unchanged)
 - Google sign-in pattern reused from Whiteboard (`board-18d33`); UID-owned collection under `sparkonUsers/{uid}/collection`

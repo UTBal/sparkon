@@ -8,6 +8,9 @@ service cloud.firestore {
     }
 
     // ===== SparkON least-privilege pilot =====
+    // Seats (2–6, start ≥2) client-enforced — not in rules.
+    // Stakes/escrow CF: NOT tonight. Collection create-only; transfers later.
+    // Do NOT weaken users/{userId}/notes/{noteId} above.
     function signedIn() { return request.auth != null; }
     function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
     function roomPath(roomId) {

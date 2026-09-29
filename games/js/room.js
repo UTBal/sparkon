@@ -1,5 +1,5 @@
 /**
- * Cloud room: create/join by code, host approve, 5 players, 2 displays.
+ * Cloud room: create/join by code, host approve, 2–6 players, 2 displays.
  * Phases: lobby → question → locked → reveal → scores → (next) → finished
  * Host-trusted scoring for pilot (answers loaded only on host path).
  * Identity: always Firebase Auth uid (Google or anonymous) — never guest-* strings.
@@ -7,7 +7,8 @@
 import { whenReady, getDb, fsMod, getAuth, ensureSignedIn } from './auth.js';
 import { ROOMS, CODES, DISPLAY_CODES, USERS } from './paths.js';
 
-const MAX_PLAYERS = 5;
+const MAX_PLAYERS = 6;
+const MIN_PLAYERS = 2;
 const MAX_DISPLAYS = 2;
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
@@ -152,7 +153,7 @@ export async function requestJoin({ code, nickname, homeLabel = '' } = {}) {
     sessionStorage.setItem('sparkonMemberId', uid);
     return { roomId, code: clean, memberId: uid, pending: !existing.approved };
   }
-  if (approved.length >= MAX_PLAYERS) throw new Error('Room is full (5 players).');
+  if (approved.length >= MAX_PLAYERS) throw new Error('Room is full (6 players).');
   const nick = (nickname || 'Player').trim().slice(0, 24) || 'Player';
   if (members.length >= MAX_PLAYERS + 3) throw new Error('Too many pending joiners. Ask the host.');
   await f.setDoc(f.doc(db, ROOMS, roomId, 'members', uid), {
@@ -184,7 +185,7 @@ export async function approveMember(roomId, memberId, approved = true) {
   if (approved) {
     const membersSnap = await f.getDocs(f.collection(db, ROOMS, roomId, 'members'));
     const approvedCount = membersSnap.docs.filter(d => d.data().approved).length;
-    if (approvedCount >= MAX_PLAYERS) throw new Error('Room is full (5 players).');
+    if (approvedCount >= MAX_PLAYERS) throw new Error('Room is full (6 players).');
   }
   await f.updateDoc(f.doc(db, ROOMS, roomId, 'members', memberId), { approved: !!approved });
 }
@@ -394,4 +395,4 @@ export async function markConnected(roomId, memberId) {
   } catch { /* ignore */ }
 }
 
-export { MAX_PLAYERS, MAX_DISPLAYS };
+export { MAX_PLAYERS, MIN_PLAYERS, MAX_DISPLAYS };

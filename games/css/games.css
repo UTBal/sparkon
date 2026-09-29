@@ -96,3 +96,29 @@ html[data-theme=premium] .logo-swap,html[data-theme=hero] .logo-swap{content:url
   font-weight: 700;
   letter-spacing: .02em;
 }
+
+.account-chip{
+  display:inline-flex;align-items:center;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:.8rem;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--line);
+  background:#1c2740;color:var(--ink);min-height:36px;
+}
+.play-theme-panel{padding:12px 14px;margin:10px 0}
+.play-theme-panel h2{margin:0}
+.hand-cards{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0;
+}
+.hand-pick{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:8px;background:#161f33;border:1px solid var(--line);border-radius:14px;
+  min-height:0;text-align:center;
+}
+.hand-pick[aria-pressed=true]{border:3px solid var(--accent);background:#2a3858;padding:6px}
+.hand-pick .sparkon-orig{max-width:100%;width:100%;pointer-events:none}
+.hand-pick .science-card{width:100%;max-width:170px;pointer-events:none;margin:0 auto}
+.hand-caption{font-size:.75rem;line-height:1.2}
+.reveal-card,.tv-reveal-card{max-width:200px;margin:14px auto}
+.tv-reveal-card .sparkon-orig{max-width:220px}
+@media(max-width:380px){
+  .hand-cards{gap:8px}
+  .account-chip{max-width:100px;font-size:.7rem;padding:4px 8px}
+}

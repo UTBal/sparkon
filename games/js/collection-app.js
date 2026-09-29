@@ -1,7 +1,7 @@
 import { initialize, whenReady, signIn, signOut, getAuth, initErrorMessage } from './auth.js';
 import {
   loadOrCreateCollection, watchCollection, loadProfile, setThemePref, openPackPilot,
-  hasPremium, hasHero, resolvedTheme, guestStarter
+  previewTheme, themeAsEdition, guestStarter
 } from './deck.js';
 import { loadCardArt, renderCardInstance } from './cards.js';
 import { ensureUserProfile } from './room.js';
@@ -11,19 +11,31 @@ let cards = [];
 let themePref = 'basic';
 let unsub = null;
 
+function updateAccountChip(user) {
+  const chip = $('accountChip');
+  if (!chip) return;
+  if (user && !user.isAnonymous) {
+    chip.textContent = user.displayName || user.email || 'Signed in';
+    chip.title = user.email || user.displayName || '';
+  } else {
+    chip.textContent = 'Guest';
+    chip.title = user?.isAnonymous ? 'Anonymous guest' : '';
+  }
+}
+
 function applySkin() {
-  const theme = resolvedTheme(themePref, cards); // basic|premium|hero
+  const theme = previewTheme(themePref); // basic|premium|hero — preview unlocked tonight
   document.documentElement.dataset.theme = theme === 'basic' ? 'original' : theme;
   const logo = theme === 'basic' ? '/games/assets/logo-original.svg' : '/games/assets/logo.svg';
   $('logo').src = logo;
   $('skinOriginal').setAttribute('aria-pressed', String(theme === 'basic'));
   $('skinPremium').setAttribute('aria-pressed', String(theme === 'premium'));
   $('skinHero').setAttribute('aria-pressed', String(theme === 'hero'));
-  $('skinPremium').disabled = !hasPremium(cards);
-  $('skinHero').disabled = !hasHero(cards);
+  $('skinPremium').disabled = false;
+  $('skinHero').disabled = false;
   $('skinHelp').textContent = theme === 'basic'
-    ? 'Original skin: Claude shiny cards + classic logo. Gameplay unchanged.'
-    : `${theme === 'hero' ? 'Hero' : 'Premium'} skin unlocked. Logo updated. Scoring unchanged.`;
+    ? 'Original skin preview: Claude shiny cards + classic logo. Gameplay unchanged.'
+    : `${theme === 'hero' ? 'Hero' : 'Premium'} skin preview. Logo updated. Scoring unchanged.`;
 }
 
 function render() {
@@ -33,15 +45,30 @@ function render() {
   $('collectionCount').textContent = `${cards.length} cards · ${prem} Premium · ${hero} Hero · π not in packs`;
   const box = $('cards');
   box.replaceChildren();
-  cards.slice().reverse().forEach(inst => box.append(renderCardInstance(inst)));
+  // Original theme: show real owned editions. Premium/Hero preview: skin all cards.
+  const ed = themeAsEdition(themePref);
+  cards.slice().reverse().forEach(inst => {
+    const shown = (themePref === 'basic' || themePref === 'original')
+      ? inst
+      : { ...inst, edition: ed };
+    box.append(renderCardInstance(shown));
+  });
 }
 
 async function bindUser(user) {
   if (unsub) { unsub(); unsub = null; }
+  updateAccountChip(user);
   if (!user) {
     cards = guestStarter();
     themePref = 'basic';
     $('authStatus').textContent = 'Guest deck (temporary). Sign in to save across devices.';
+    render();
+    return;
+  }
+  if (user.isAnonymous) {
+    cards = guestStarter();
+    themePref = 'basic';
+    $('authStatus').textContent = 'Guest · deck will not sync across devices.';
     render();
     return;
   }
@@ -64,38 +91,28 @@ $('btnSignIn').onclick = async () => {
 };
 $('btnSignOut').onclick = () => signOut();
 
-$('skinOriginal').onclick = async () => {
-  themePref = 'basic';
+async function setSkin(pref) {
+  themePref = pref;
   const u = getAuth()?.currentUser;
-  if (u) await setThemePref(u.uid, 'basic');
+  if (u && !u.isAnonymous) await setThemePref(u.uid, pref);
   render();
-};
-$('skinPremium').onclick = async () => {
-  if (!hasPremium(cards)) return;
-  themePref = 'premium';
-  const u = getAuth()?.currentUser;
-  if (u) await setThemePref(u.uid, 'premium');
-  render();
-};
-$('skinHero').onclick = async () => {
-  if (!hasHero(cards)) return;
-  themePref = 'hero';
-  const u = getAuth()?.currentUser;
-  if (u) await setThemePref(u.uid, 'hero');
-  render();
-};
+}
+$('skinOriginal').onclick = () => setSkin('basic');
+$('skinPremium').onclick = () => setSkin('premium');
+$('skinHero').onclick = () => setSkin('hero');
 
 document.querySelectorAll('.open-pack').forEach(btn => {
   btn.onclick = async () => {
     const u = getAuth()?.currentUser;
-    if (!u) {
+    if (!u || u.isAnonymous) {
       $('authStatus').textContent = 'Sign in with Google to open packs into a saved collection.';
       return;
     }
     try {
-      const granted = await openPackPilot(u.uid, btn.dataset.pack);
-      $('revealTitle').textContent = 'Pack opened';
-      $('revealMsg').textContent = 'Provisional client RNG · cosmetics only · no π. Same science either way.';
+      const kind = btn.dataset.pack || 'mixed';
+      const granted = await openPackPilot(u.uid, kind);
+      $('revealTitle').textContent = 'Mixed pack opened';
+      $('revealMsg').textContent = 'Provisional client RNG · cosmetics only · no π. Same science either way. Stakes later.';
       const box = $('revealed');
       box.replaceChildren();
       granted.forEach(g => box.append(renderCardInstance(g)));
@@ -110,13 +127,15 @@ async function boot() {
   await loadCardArt();
   try {
     await initialize(user => {
-      $('btnSignIn').classList.toggle('hide', !!user);
-      $('btnSignOut').classList.toggle('hide', !user);
+      const signed = !!(user && !user.isAnonymous);
+      $('btnSignIn').classList.toggle('hide', signed);
+      $('btnSignOut').classList.toggle('hide', !signed);
       bindUser(user);
     });
     await whenReady();
   } catch (e) {
     $('authStatus').textContent = initErrorMessage(e);
+    updateAccountChip(null);
     cards = guestStarter();
     render();
   }

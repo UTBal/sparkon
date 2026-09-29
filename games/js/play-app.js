@@ -3,10 +3,11 @@ import {
 } from './auth.js';
 import {
   createRoom, requestJoin, setReady, watchRoom, hostAdvance, submitAnswer,
-  attachDisplayToRoom, markConnected, currentPlayerId, ensureUserProfile, MAX_PLAYERS,
+  attachDisplayToRoom, markConnected, currentPlayerId, ensureUserProfile, MAX_PLAYERS, MIN_PLAYERS,
   approveMember
 } from './room.js';
-import { loadOrCreateCollection } from './deck.js';
+import { loadOrCreateCollection, loadProfile, setThemePref, previewTheme, themeAsEdition } from './deck.js';
+import { loadCardArt, renderCardInstance } from './cards.js';
 import { loadAnswerKey, gradeAll } from './host-score.js';
 
 const $ = id => document.getElementById(id);
@@ -24,6 +25,8 @@ let selectionRoundId = null;
 let drawnHandRoundId = null;
 let myLocked = false;
 let answerKeyLoaded = false;
+let themePref = 'basic';
+let artReady = false;
 
 function show(view) {
   views.forEach(v => {
@@ -47,13 +50,73 @@ function me() {
   return members.find(m => m.id === currentPlayerId());
 }
 
+function updateAccountChip(user) {
+  const chip = $('accountChip');
+  if (!chip) return;
+  if (user && !user.isAnonymous) {
+    chip.textContent = user.displayName || user.email || 'Signed in';
+    chip.title = user.email || user.displayName || '';
+  } else {
+    chip.textContent = 'Guest';
+    chip.title = user?.isAnonymous ? 'Anonymous guest' : '';
+  }
+}
+
+function applyThemeUI() {
+  const theme = previewTheme(themePref);
+  document.documentElement.dataset.theme = theme === 'basic' ? 'original' : theme;
+  const logo = $('logo');
+  if (logo) logo.src = theme === 'basic' ? '/games/assets/logo-original.svg' : '/games/assets/logo.svg';
+  const orig = $('skinOriginal');
+  const prem = $('skinPremium');
+  const hero = $('skinHero');
+  if (orig) orig.setAttribute('aria-pressed', String(theme === 'basic'));
+  if (prem) {
+    prem.setAttribute('aria-pressed', String(theme === 'premium'));
+    prem.disabled = false;
+  }
+  if (hero) {
+    hero.setAttribute('aria-pressed', String(theme === 'hero'));
+    hero.disabled = false;
+  }
+  const help = $('skinHelp');
+  if (help) {
+    help.textContent = theme === 'basic'
+      ? 'Original skin preview — Claude shiny fronts. Scoring unchanged.'
+      : `${theme === 'hero' ? 'Hero' : 'Premium'} skin preview — Astra treatment on hand cards. Scoring unchanged.`;
+  }
+}
+
+async function setSkin(pref) {
+  themePref = pref;
+  applyThemeUI();
+  const u = getAuth()?.currentUser;
+  if (u && !u.isAnonymous) {
+    try { await setThemePref(u.uid, pref); } catch { /* non-fatal */ }
+  }
+  // Remount hand so theme treatment refreshes
+  if (room && room.phase === 'question' && !myLocked) {
+    drawnHandRoundId = null;
+    const rounds = mainRounds();
+    const idx = room.roundIndex || 0;
+    const round = pack.rounds.find(r => r.id === room.roundId) || rounds[idx];
+    if (round) drawHand(round);
+  }
+}
+
 function setAuthUI(user) {
   const isAnon = !!(user && user.isAnonymous);
   $('btnSignIn').classList.toggle('hide', !!user && !isAnon);
   $('btnSignOut').classList.toggle('hide', !user || isAnon);
+  updateAccountChip(user);
   if (user && !isAnon) {
-    $('authStatus').textContent = `Signed in · deck saves to your account`;
-    ensureUserProfile(user).then(() => loadOrCreateCollection(user.uid)).catch(e => {
+    $('authStatus').textContent = `Signed in as ${user.displayName || user.email || 'Google'} · deck saves to your account`;
+    ensureUserProfile(user).then(async () => {
+      await loadOrCreateCollection(user.uid);
+      const profile = await loadProfile(user.uid);
+      themePref = profile.themePref || themePref || 'basic';
+      applyThemeUI();
+    }).catch(e => {
       $('authStatus').textContent = 'Signed in, but collection sync failed: ' + e.message;
     });
   } else if (isAnon) {
@@ -61,6 +124,7 @@ function setAuthUI(user) {
   } else {
     $('authStatus').textContent = 'Guest mode · progress is temporary unless you sign in';
   }
+  applyThemeUI();
 }
 
 function renderLobby() {
@@ -78,7 +142,7 @@ function renderLobby() {
       div.innerHTML = `<div class="nick"><span class="status-dot ${m.connected ? 'on' : ''}"></span>${escape(m.nickname)}</div>
         <div class="meta">${m.isHost ? 'Host · ' : ''}${m.ready ? 'Ready' : 'Not ready'}${m.homeLabel ? ' · Home ' + escape(m.homeLabel) : ''}${m.isGuest ? ' · guest' : ''}</div>`;
     } else {
-      div.innerHTML = `<div class="muted">Open slot ${i + 1}</div>`;
+      div.innerHTML = `<div class="muted">Open slot ${i + 1} / ${MAX_PLAYERS}</div>`;
     }
     slots.append(div);
   }
@@ -116,7 +180,8 @@ function renderLobby() {
   const host = isHost();
   $('btnStart').classList.toggle('hide', !host);
   $('btnPairTv').disabled = !host && displays.length >= 2;
-  const allReady = approved.length >= 1 && approved.every(m => m.ready);
+  const enough = approved.length >= MIN_PLAYERS;
+  const allReady = enough && approved.every(m => m.ready);
   $('btnStart').disabled = !(host && allReady);
   const self = me();
   if (self && !self.approved) {
@@ -124,9 +189,19 @@ function renderLobby() {
     $('btnReady').disabled = true;
   } else {
     $('btnReady').disabled = false;
-    $('lobbyStatus').textContent = host
-      ? (pending.length ? `${pending.length} waiting for approve.` : (allReady ? 'Everyone ready — you can start.' : 'Waiting for ready…'))
-      : (self?.ready ? 'Ready — waiting for host.' : "Tap I'm ready when you are.");
+    if (host) {
+      if (pending.length) {
+        $('lobbyStatus').textContent = `${pending.length} waiting for approve. Need ${MIN_PLAYERS}–${MAX_PLAYERS} ready to start.`;
+      } else if (!enough) {
+        $('lobbyStatus').textContent = `${approved.length} / ${MAX_PLAYERS} seated — need at least ${MIN_PLAYERS} approved & ready to start.`;
+      } else if (allReady) {
+        $('lobbyStatus').textContent = `${approved.length} ready — you can start (2–6).`;
+      } else {
+        $('lobbyStatus').textContent = 'Waiting for ready…';
+      }
+    } else {
+      $('lobbyStatus').textContent = self?.ready ? 'Ready — waiting for host.' : "Tap I'm ready when you are.";
+    }
   }
   $('btnReady').textContent = self?.ready ? 'Unready' : "I'm ready";
 }
@@ -190,19 +265,26 @@ function renderRound() {
       <p><strong>Answer:</strong> ${escape(opt?.text || rev.correctOption || '')}</p>
       <p>${escape(rev.explanation || '')}</p>
       <p class="muted">${escape(explainer ? ('Explain-it (not scored) · ' + explainer.nickname + ' — ' + (round.discussion || '')) : ('Explain-it (not scored): ' + (round.discussion || '')))}</p>`;
+    if (artReady && rev.correctConcept) {
+      const wrap = document.createElement('div');
+      wrap.className = 'reveal-card';
+      wrap.append(renderCardInstance({
+        instanceId: `reveal-${rev.correctConcept}`,
+        conceptId: rev.correctConcept,
+        edition: themeAsEdition(themePref)
+      }, { compact: true }));
+      $('revealPanel').append(wrap);
+    }
     if (room.phase === 'scores') appendScoreTable($('revealPanel'));
     $('btnHostNext').textContent = idx >= rounds.length - 1 ? 'Host: finish' : 'Host: next round';
   }
 }
 
 function gradeLocal(roundId, ans) {
-  // Players don't have the key; estimate from reveal only for display after reveal.
   const rev = room.reveal;
   if (!rev) return null;
   const conceptPoints = rev.correctConcept === ans.conceptId ? 1 : 0;
-  // acceptedConceptIds may include only one; host already scored
   const answerPoints = rev.correctOption === ans.optionId ? 1 : 0;
-  // Use server score if present
   return { total: conceptPoints + answerPoints };
 }
 
@@ -228,7 +310,7 @@ function drawHand(round) {
     selectionRoundId = round.id;
     drawnHandRoundId = null;
   }
-  // Answer snapshots re-enter renderRound; keep the mounted hand + selection for this round.
+  // Keep mounted hand when only answers update — but remount if theme forced clear
   if (drawnHandRoundId === round.id && $('hand')?.childElementCount) {
     updateLock();
     return;
@@ -240,14 +322,32 @@ function drawHand(round) {
   const cards = cardsById();
   const hand = $('hand');
   hand.replaceChildren();
+  hand.className = 'hand-cards';
+  const edition = themeAsEdition(themePref);
   round.hand.forEach(id => {
     const c = cards[id];
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = `concept ${c.subject}`;
+    b.className = `hand-pick ${c?.subject || ''}`;
     b.dataset.conceptId = id;
     b.setAttribute('aria-pressed', 'false');
-    b.innerHTML = `<span class="badge">${escape(c.subject)}</span><div>${escape(c.title)}</div>`;
+    b.setAttribute('aria-label', c?.title || id);
+    if (artReady) {
+      const front = renderCardInstance({
+        instanceId: `hand-${id}`,
+        conceptId: id,
+        edition
+      }, { compact: true });
+      front.setAttribute('aria-hidden', 'true');
+      b.append(front);
+      const caption = document.createElement('span');
+      caption.className = 'hand-caption muted';
+      caption.textContent = c?.title || id;
+      b.append(caption);
+    } else {
+      b.className = `concept ${c?.subject || ''}`;
+      b.innerHTML = `<span class="badge">${escape(c?.subject || '')}</span><div>${escape(c?.title || id)}</div>`;
+    }
     b.onclick = () => {
       if (myLocked) return;
       selectedConcept = id;
@@ -275,7 +375,6 @@ function drawHand(round) {
     };
     opts.append(b);
   });
-  // Re-apply preserved selection after a real remount (e.g. first paint / round change).
   if (selectedConcept) {
     const c = cards[selectedConcept];
     const btn = [...hand.children].find(n => n.dataset.conceptId === selectedConcept);
@@ -355,6 +454,10 @@ $('btnGuest').onclick = async () => {
   }
 };
 
+if ($('skinOriginal')) $('skinOriginal').onclick = () => setSkin('basic');
+if ($('skinPremium')) $('skinPremium').onclick = () => setSkin('premium');
+if ($('skinHero')) $('skinHero').onclick = () => setSkin('hero');
+
 $('btnCreate').onclick = async () => {
   try {
     const nick = $('nick').value.trim() || 'Host';
@@ -407,6 +510,15 @@ if (btnPairTvPlay) {
 
 $('btnStart').onclick = async () => {
   if (!room || !isHost()) return;
+  const approved = members.filter(m => m.approved);
+  if (approved.length < MIN_PLAYERS) {
+    alert(`Need at least ${MIN_PLAYERS} approved players to start.`);
+    return;
+  }
+  if (!approved.every(m => m.ready)) {
+    alert('Everyone approved must be ready.');
+    return;
+  }
   try {
     await ensureHostKey();
     const rounds = mainRounds();
@@ -448,7 +560,6 @@ $('btnHostReveal').onclick = async () => {
   if (!isHost()) return;
   try {
     await ensureHostKey();
-    // Freeze to locked first if still question
     let rev = room.revision;
     if (room.phase === 'question') {
       await hostAdvance(room.id, rev, { phase: 'locked' });
@@ -460,7 +571,6 @@ $('btnHostReveal').onclick = async () => {
     for (const [uid, g] of Object.entries(results)) {
       scores[uid] = (scores[uid] || 0) + (g.total || 0);
     }
-    // unanswered stay unanswered (no points)
     await hostAdvance(room.id, rev, {
       phase: 'reveal',
       reveal: {
@@ -504,6 +614,14 @@ $('btnHostNext').onclick = async () => {
 
 async function boot() {
   show('home');
+  applyThemeUI();
+  try {
+    await loadCardArt();
+    artReady = true;
+  } catch (e) {
+    console.warn('[SparkON] card art load failed; falling back to text hand', e);
+    artReady = false;
+  }
   try {
     await initialize((user) => setAuthUI(user));
     await whenReady();
@@ -515,7 +633,6 @@ async function boot() {
     $('authStatus').textContent = initErrorMessage(e);
   }
   await loadPack();
-  // resume prior room if Auth session still present (anon or Google)
   const rid = sessionStorage.getItem('sparkonRoomId');
   if (rid && getAuth()?.currentUser) {
     try { attachWatch(rid); } catch { /* fresh */ }

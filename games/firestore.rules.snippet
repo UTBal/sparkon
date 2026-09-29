@@ -3,6 +3,8 @@
 // Do NOT weaken users/{userId}/notes/{noteId}.
 // NOT deployed from this box — Alex/Builder must publish in Firebase Console.
 // Guests/TVs: Firebase Anonymous Auth. hostUid / member ids / displayId = auth.uid.
+// Seats (2–6 players, start ≥2) are client-enforced in room.js / play-app.js — not in rules.
+// Stakes / card escrow Cloud Functions: NOT tonight — collection create-only; transfers later.
 
     function signedIn() { return request.auth != null; }
     function isSelf(uid) { return signedIn() && request.auth.uid == uid; }

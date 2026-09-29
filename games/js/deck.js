@@ -1,7 +1,7 @@
 /** UID-owned collection — never users/{uid}/notes. */
 import { whenReady, getDb, fsMod } from './auth.js';
 import { USERS, USER_SPARKON } from './paths.js';
-import { starterCollection, hasPremium, hasHero, resolvedTheme, drawPack } from './collection.mjs';
+import { starterCollection, hasPremium, hasHero, resolvedTheme, previewTheme, themeAsEdition, drawPack } from './collection.mjs';
 
 function profileRef(f, db, uid) {
   // Primary isolated root
@@ -140,4 +140,4 @@ export function guestStarter() {
   return starterCollection(gid);
 }
 
-export { hasPremium, hasHero, resolvedTheme, drawPack };
+export { hasPremium, hasHero, resolvedTheme, previewTheme, themeAsEdition, drawPack };
