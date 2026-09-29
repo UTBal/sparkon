@@ -13,7 +13,7 @@ Static SparkON / Eureka dual-site for GitHub Pages.
 - Repository root serves **SparkON** (former Eureka Version 2), with SparkON wordmark branding.
 - `/v1/` remains the original **Eureka** build (unchanged).
 - `/v2/` is kept as a SparkON mirror/alias of the same build.
-- Use the “Demo site” control (bottom-right) to switch SparkON ↔ Eureka.
+- Use the recycle icon (bottom-right) to switch SparkON ↔ Eureka.
 
 Enable GitHub Pages from the `main` branch root.
 

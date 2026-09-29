@@ -102,9 +102,8 @@
     el.setAttribute('data-version-switch', '1');
     el.setAttribute('role', 'button');
     el.setAttribute('tabindex', '0');
-    el.setAttribute('title', 'Switch between SparkON and Eureka');
-    el.setAttribute('aria-label', 'Demo site — switch between SparkON and Eureka');
-    el.innerHTML = RECYCLE_ICON + '<span class="demo-label">Demo site</span>';
+    el.setAttribute('aria-label', 'Switch between SparkON and Eureka');
+    el.innerHTML = RECYCLE_ICON;
     el.addEventListener('click', function (e) {
       e.preventDefault();
       go();
