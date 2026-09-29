@@ -2,16 +2,16 @@
 <title>Lab Duel · SparkON</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css"></head><body>
-<header class="top"><div class="in"><a class="logo" href="index.html">SparkON</a><nav><a href="index.html" class="">Home</a><a href="math.html" class="">Math</a><a href="physics.html" class="">Physics</a><a href="chemistry.html" class="">Chemistry</a><a href="biology.html" class="">Biology</a><a href="lab-duel.html" class="on">Lab Duel</a><a href="timeline.html" class="">Timeline</a><a href="about.html" class="">About</a><a class="buy" href="order.html">Get the cards</a></nav></div></header>
+<header class="top"><div class="in"><a class="logo" href="index.html">SparkON</a><button type="button" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">Menu</button><nav id="site-nav"><a href="index.html" class="">Home</a><a href="math.html" class="">Math</a><a href="physics.html" class="">Physics</a><a href="chemistry.html" class="">Chemistry</a><a href="biology.html" class="">Biology</a><a href="lab-duel.html" class="on">Lab Duel</a><a href="timeline.html" class="">Timeline</a><a href="about.html" class="">About</a><a class="buy" href="order.html">Get the cards</a></nav></div></header>
 <main class="wrap"><h1>Lab Duel</h1>
 <p class="lead">A card game for 2–4 players where the only way to win is to use the science correctly.</p>
 <div class="panels">
-<div class="panel"><h3>Setup</h3>Shuffle the concept cards and deal 5 to each player (3 with the small prototype deck). Put the challenge cards face down.</div>
-<div class="panel"><h3>A round</h3>Turn over a challenge: a real situation. Play a card that solves it and explain why in one sentence. If you can, say a number.</div>
-<div class="panel"><h3>Scoring</h3>Flip the challenge: its back lists the accepted cards. Right card, sensible explanation: you keep the challenge. Two accepted cards together score double. First to 5 wins.</div>
+<div class="panel"><h3>Setup</h3>Shuffle the concept cards. With the small prototype deck (10 cards), deal <b>2 cards each to 4 players</b> (or 3 each for 2–3 players). Put the three challenge cards face down. A larger deck can deal 5 each.</div>
+<div class="panel"><h3>A round</h3>Turn over a challenge: a real situation. On your turn, play a card that solves it and explain why in one sentence. If you can, say a number. If you cannot play, pass or redraw one card from the remaining deck (then discard one) once per turn.</div>
+<div class="panel"><h3>Scoring</h3>Flip the challenge: its back lists the accepted cards. Right card and a sensible explanation: you keep the challenge (1 point; two accepted cards together score 2). With only three challenges in the prototype, <b>highest score after all challenges wins</b>; ties share the win or play a sudden-death rematch challenge if you have more. First to 5 is for a larger reusable challenge deck.</div>
 </div>
 <h2>The first three challenges</h2><div id="stop-the-car" class="panel" style="margin-bottom:18px"><div class="duel">
-<div class="tilt"><div class="flip" onclick="this.classList.toggle('flipped')"><div class="inner"><div><div class="card challenge front"><div class="frame">
+<div class="tilt"><div class="flip"><div class="inner"><div><div class="card challenge front"><div class="frame">
   <div class="kicker"><span>Challenge</span><span>Lab Duel</span></div>
   <div class="ctext">Stop a car doing 20 m/s within 30 m.</div>
   <div class="ask">What braking does it take, and is it possible?</div>
@@ -19,7 +19,7 @@
             <circle cx="26" cy="60" r="6" stroke="#1C1C1E" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="72" cy="60" r="6" stroke="#1C1C1E" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
             <path d="M92 20 v44" stroke="#1C1C1E" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 3"/><text x="40" y="20" font-size="10" fill="#1C1C1E" font-family="sans-serif">20 m/s</text></svg></div>
   <div class="foot">Play a card that solves it and say why in one sentence.</div>
-  <div class="set"><span>EUREKA</span><span>C1</span></div>
+  <div class="set"><span>SPARKON</span><span>C1</span></div>
 </div></div></div><div><div class="card challenge back"><div class="frame">
   <div class="head"><div class="name" style="font-size:8.6pt">Accepted answers</div><div class="gem" style="background:linear-gradient(140deg,#FFD60A,#FF9F0A)">C1</div></div>
   <div class="bar"></div>
@@ -31,8 +31,13 @@
   </div>
   <div class="bottom"><div class="scan">Close enough counts: the other players decide if the explanation is right.</div></div>
 </div></div></div></div></div></div>
-<div style="flex:1;min-width:240px"><h3>Stop a car doing 20 m/s within 30 m.</h3><p>What braking does it take, and is it possible?</p><p class="hint" style="text-align:left">Think first, then tap the card to see which ideas win it.</p></div></div></div><div id="ice-on-a-lake" class="panel" style="margin-bottom:18px"><div class="duel">
-<div class="tilt"><div class="flip" onclick="this.classList.toggle('flipped')"><div class="inner"><div><div class="card challenge front"><div class="frame">
+<div style="flex:1;min-width:240px"><h3>Stop a car doing 20 m/s within 30 m.</h3><p>What braking does it take, and is it possible?</p><p class="hint" style="text-align:left">Think first, then flip the card (click, tap, or Enter/Space) — or read the answer below.</p><div class="challenge-readable" id="stop-the-car-answer">
+<p><b>Accepted cards:</b> Newton&#x27;s second law · Energy conservation (together score double).</p>
+<p class="lbl">A winning explanation</p>
+<p>The car&#x27;s movement energy must be removed by braking over 30 m, needing about 6.7 m/s² of deceleration (about 8 kN for a 1,200 kg car). Possible on a dry road if braking starts at once — not on ice.</p>
+<p><code>a = v² / (2s) = 400 / 60 ≈ 6.7 m/s²</code></p>
+</div></div></div></div><div id="ice-on-a-lake" class="panel" style="margin-bottom:18px"><div class="duel">
+<div class="tilt"><div class="flip"><div class="inner"><div><div class="card challenge front"><div class="frame">
   <div class="kicker"><span>Challenge</span><span>Lab Duel</span></div>
   <div class="ctext">Why does ice float on a lake?</div>
   <div class="ask">Explain it so a friend could predict it.</div>
@@ -41,7 +46,7 @@
             <path d="M34 50 q 6 -6 12 0 q -6 6 -12 0 z M46 50 l5 -4 v8 z" stroke="#1C1C1E" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             <text x="68" y="60" font-size="9" fill="#1C1C1E" font-family="sans-serif">4 °C</text></svg></div>
   <div class="foot">Play a card that solves it and say why in one sentence.</div>
-  <div class="set"><span>EUREKA</span><span>C2</span></div>
+  <div class="set"><span>SPARKON</span><span>C2</span></div>
 </div></div></div><div><div class="card challenge back"><div class="frame">
   <div class="head"><div class="name" style="font-size:8.6pt">Accepted answers</div><div class="gem" style="background:linear-gradient(140deg,#FFD60A,#FF9F0A)">C2</div></div>
   <div class="bar"></div>
@@ -53,8 +58,13 @@
   </div>
   <div class="bottom"><div class="scan">Close enough counts: the other players decide if the explanation is right.</div></div>
 </div></div></div></div></div></div>
-<div style="flex:1;min-width:240px"><h3>Why does ice float on a lake?</h3><p>Explain it so a friend could predict it.</p><p class="hint" style="text-align:left">Think first, then tap the card to see which ideas win it.</p></div></div></div><div id="ladder" class="panel" style="margin-bottom:18px"><div class="duel">
-<div class="tilt"><div class="flip" onclick="this.classList.toggle('flipped')"><div class="inner"><div><div class="card challenge front"><div class="frame">
+<div style="flex:1;min-width:240px"><h3>Why does ice float on a lake?</h3><p>Explain it so a friend could predict it.</p><p class="hint" style="text-align:left">Think first, then flip the card (click, tap, or Enter/Space) — or read the answer below.</p><div class="challenge-readable" id="ice-on-a-lake-answer">
+<p><b>Accepted cards:</b> Density · Oxygen (together score double).</p>
+<p class="lbl">A winning explanation</p>
+<p>Ice (0.92 g/cm³) is less dense than water (1.00 g/cm³), so it floats. Bonus: water molecules, built around oxygen, hold each other further apart when they freeze.</p>
+<p><code>0.92 &lt; 1.00 → floats, about 9/10 under water</code></p>
+</div></div></div></div><div id="ladder" class="panel" style="margin-bottom:18px"><div class="duel">
+<div class="tilt"><div class="flip"><div class="inner"><div><div class="card challenge front"><div class="frame">
   <div class="kicker"><span>Challenge</span><span>Lab Duel</span></div>
   <div class="ctext">Will a 5 m ladder reach a window 4 m up if its foot must stand 3 m out?</div>
   <div class="ask">Yes or no, and prove it.</div>
@@ -64,7 +74,7 @@
             <text x="48" y="62" font-size="8" fill="#1C1C1E" font-family="sans-serif" opacity="0">.</text>
             <text x="36" y="38" font-size="9" fill="#1C1C1E" font-family="sans-serif">5 m</text></svg></div>
   <div class="foot">Play a card that solves it and say why in one sentence.</div>
-  <div class="set"><span>EUREKA</span><span>C3</span></div>
+  <div class="set"><span>SPARKON</span><span>C3</span></div>
 </div></div></div><div><div class="card challenge back"><div class="frame">
   <div class="head"><div class="name" style="font-size:8.6pt">Accepted answers</div><div class="gem" style="background:linear-gradient(140deg,#FFD60A,#FF9F0A)">C3</div></div>
   <div class="bar"></div>
@@ -76,8 +86,13 @@
   </div>
   <div class="bottom"><div class="scan">Close enough counts: the other players decide if the explanation is right.</div></div>
 </div></div></div></div></div></div>
-<div style="flex:1;min-width:240px"><h3>Will a 5 m ladder reach a window 4 m up if its foot must stand 3 m out?</h3><p>Yes or no, and prove it.</p><p class="hint" style="text-align:left">Think first, then tap the card to see which ideas win it.</p></div></div></div></main>
-<footer><div class="in">SparkON · free study pages and collectible knowledge cards · a student business project by Daniel and Leo. All explanations are our own.</div></footer>
+<div style="flex:1;min-width:240px"><h3>Will a 5 m ladder reach a window 4 m up if its foot must stand 3 m out?</h3><p>Yes or no, and prove it.</p><p class="hint" style="text-align:left">Think first, then flip the card (click, tap, or Enter/Space) — or read the answer below.</p><div class="challenge-readable" id="ladder-answer">
+<p><b>Accepted cards:</b> Pythagoras&#x27; theorem only.</p>
+<p class="lbl">A winning explanation</p>
+<p>The ladder is the long side: 3² + h² = 5², so h² = 16 and h = 4 m. It reaches exactly to the window sill, with nothing to spare.</p>
+<p><code>√(25 − 9) = √16 = 4 m</code></p>
+</div></div></div></div></main>
+<footer><div class="in">© 2026 SparkON. All rights reserved. · <a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms of Use</a></div></footer>
 <div class="demo"><span class="demo-icon" aria-hidden="true">♻</span></div>
 <script src="site.js" defer></script>
 <script src="version-switch.js" defer></script>

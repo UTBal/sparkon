@@ -218,3 +218,33 @@ footer .in{max-width:1024px;margin:0 auto;padding:18px 16px 28px}
 .card.challenge.back .answers{display:flex;flex-wrap:wrap;gap:1mm}
 .card.challenge.back .chip{font-size:6.2pt;font-weight:600;color:#fff;border-radius:5mm;padding:.6mm 2.1mm}
 .card.challenge.back .num{font-size:8.4pt;font-weight:600;text-align:center;padding:1.3mm;background:#F5F5F7;border-radius:1.8mm}
+
+/* Legal pages */
+.legal h2{font-size:22px;margin:1.6em 0 .4em}
+.legal p,.legal ul{max-width:720px;color:#1D1D1F;font-size:17px;line-height:1.55}
+.legal ul{padding-left:1.2em}
+footer .in a{color:var(--muted)}
+footer .in a:hover{color:var(--ink)}
+/* R18 focus for flips */
+.flip{outline:none}
+.flip:focus-visible{outline:2px solid var(--blue);outline-offset:4px;border-radius:4mm}
+/* R19 mobile nav */
+.nav-toggle{display:none;margin-left:auto;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.nav-toggle:hover{background:#fff}
+.nav-toggle:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media(max-width:760px){
+  header.top .in{height:auto;min-height:48px;flex-wrap:wrap;padding:8px 16px;gap:8px 12px}
+  .nav-toggle{display:inline-flex;align-items:center}
+  header.top nav{display:none;flex-basis:100%;flex-direction:column;align-items:stretch;gap:0;overflow:visible;padding:4px 0 8px}
+  header.top.nav-open nav{display:flex}
+  header.top nav a{padding:10px 4px;border-bottom:1px solid var(--line);white-space:normal}
+  header.top nav a.buy{margin-left:0;margin-top:8px;text-align:center}
+  /* Readable challenge backs outside print card size */
+  .challenge-readable{display:block;margin-top:12px;padding:14px 16px;background:#fff;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.04);font-size:16px;line-height:1.45;color:var(--ink)}
+  .challenge-readable .lbl{display:block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);margin:10px 0 4px}
+  .challenge-readable .chips{margin:6px 0}
+}
+@media(min-width:761px){
+  .challenge-readable{margin-top:14px;padding:14px 16px;background:#fff;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.04);font-size:16px;line-height:1.45}
+  .challenge-readable .lbl{display:block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);margin:10px 0 4px}
+}

@@ -1,19 +1,20 @@
 # SparkON
 
-Static SparkON / Eureka dual-site for GitHub Pages.
+Alex’s SparkON education product site (free science study pages, collectible cards, Lab Duel).
 
-## URLs (after rename to `sparkon`)
+## Live
 
-| Site | Path |
-|------|------|
-| **SparkON** (primary) | https://utbal.github.io/sparkon/ |
-| **SparkON** alias | https://utbal.github.io/sparkon/v2/ |
-| **Eureka** Version 1 | https://utbal.github.io/sparkon/v1/ |
+| Site | URL |
+|------|-----|
+| **SparkON** (custom domain) | https://sparkon.cards/ |
+| **Mirror** | https://sparkon.games/ |
+| **GitHub Pages** | https://utbal.github.io/sparkon/ |
+| **Eureka v1** (school edition — do not change unless asked) | https://sparkon.cards/v1/ |
 
-- Repository root serves **SparkON** (former Eureka Version 2), with SparkON wordmark branding.
-- `/v1/` remains the original **Eureka** build (unchanged).
-- `/v2/` is kept as a SparkON mirror/alias of the same build.
-- Use the recycle icon (bottom-right) to switch SparkON ↔ Eureka.
+- Repository root and `/v2/` serve **SparkON**.
+- `/v1/` remains the frozen **Eureka** school prototype.
+- Legal: [Privacy Policy](privacy.html), [Terms of Use](terms.html).
+- Use the recycle icon (bottom-right) to switch SparkON ↔ Eureka v1.
 
 Enable GitHub Pages from the `main` branch root.
 
