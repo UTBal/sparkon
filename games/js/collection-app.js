@@ -27,7 +27,7 @@ function applySkin() {
   const theme = previewTheme(themePref); // basic|premium|hero — preview unlocked tonight
   document.documentElement.dataset.theme = theme === 'basic' ? 'original' : theme;
   const logo = theme === 'basic' ? '/games/assets/logo-original.svg' : '/games/assets/logo.svg';
-  $('logo').src = logo;
+  if ($('logo')) $('logo').src = logo;
   $('skinOriginal').setAttribute('aria-pressed', String(theme === 'basic'));
   $('skinPremium').setAttribute('aria-pressed', String(theme === 'premium'));
   $('skinHero').setAttribute('aria-pressed', String(theme === 'hero'));
@@ -86,6 +86,7 @@ $('btnSignOut').onclick = () => signOut();
 
 async function setSkin(pref) {
   themePref = pref;
+  window.SparkONSkin?.set(pref);
   sessionStorage.setItem('sparkonScreenSkin', pref);
   const u = getAuth()?.currentUser;
   if (u && !u.isAnonymous) await setThemePref(u.uid, pref);
@@ -135,3 +136,5 @@ async function boot() {
   }
 }
 boot();
+
+window.addEventListener('sparkon:skinchange',e=>{themePref=e.detail.skin==='original'?'basic':e.detail.skin;applySkin();});

@@ -1,6 +1,6 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Practice · SparkON (offline)</title><link rel="stylesheet" href="/games/css/games.css"><link rel="stylesheet" href="/games/css/standard-cards.css"></head>
-<body><header class="app"><strong>Offline practice</strong><nav><a class="btn" href="/games/">Online play</a></nav></header>
+<!doctype html><html lang="en"><head><script src="/skins.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Practice · SparkON (offline)</title><link rel="stylesheet" href="/games/css/games.css"><link rel="stylesheet" href="/games/css/standard-cards.css"><link rel="stylesheet" href="/skins.css"></head>
+<body data-sparkon-surface="game"><header class="top site-header"><div class="in"><a class="logo" data-logo-link href="/" aria-label="SparkON home">SparkON</a><button type="button" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">Menu</button><nav id="site-nav" aria-label="Main navigation"><a href="/">Discover</a><a href="/math.html">Science</a><a href="/editions.html">The cards</a><a href="/games/">Play together</a><details class="site-more"><summary>Explore</summary><div><a href="/math.html">Mathematics</a><a href="/physics.html">Physics</a><a href="/chemistry.html">Chemistry</a><a href="/biology.html">Biology</a><a href="/timeline.html">Timeline</a><a href="/about.html">About SparkON</a><a href="/print.html">Print cards</a><a href="/order.html">Get the cards</a><a href="/lab-duel.html">Lab Duel</a></div></details><a class="nav-play" href="/games/play.html">Enter a room ↗</a></nav></div></header><div class="app game-actions"><strong>Offline practice</strong><nav><a class="btn" href="/games/">Online play</a></nav></div>
 <main class="wrap"><div class="notice">Solo rehearsal on this device only. Not a cloud room. Answer key is embedded here for practice — do not use this page for competitive multiplayer.</div>
 <p class="badge" id="progress"></p><h1 id="title"></h1><p id="prompt"></p>
 <section id="play"><h2>1. Choose your science card</h2><div id="hand" class="grid2"></div>
@@ -43,4 +43,4 @@ $('lock').onclick=()=>{if(locked||!concept||!option)return;locked=true;const r=r
 $('next').onclick=()=>{if(index===rounds.length-1){$('title').textContent='Practice complete';$('prompt').textContent=`Score ${total} / 16 · max 2 per round, no speed points`;$('reveal').classList.add('hide');$('next').classList.add('hide');$('play').classList.add('hide');$('score').innerHTML=`<a class="btn primary" href="/games/practice.html">Play again</a> · <a class="btn" href="/games/">Online play</a>`}
  else{index++;draw()}window.scrollTo(0,0)};
 draw();
-</script></body></html>
+</script><script src="/site.js" defer></script></body></html>

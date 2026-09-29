@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html><html lang="en"><head><script src="/skins.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Home · SparkON</title>
 <link rel="icon" href="/icons/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
@@ -10,14 +10,14 @@
 <meta name="application-name" content="SparkON">
 <meta name="apple-mobile-web-app-title" content="SparkON">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css"></head><body>
-<header class="top"><div class="in"><a class="logo" href="index.html">SparkON</a><button type="button" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">Menu</button><nav id="site-nav"><a href="index.html" class="on">Home</a><a href="math.html" class="">Math</a><a href="physics.html" class="">Physics</a><a href="chemistry.html" class="">Chemistry</a><a href="biology.html" class="">Biology</a><a href="games/">Play</a><a href="lab-duel.html" class="">Lab Duel</a><a href="timeline.html" class="">Timeline</a><a href="about.html" class="">About</a><a href="print.html" class="">Print</a><a class="buy" href="order.html">Get the cards</a></nav></div></header>
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="/skins.css"><link rel="stylesheet" href="/games/css/astra-cards.css"></head><body>
+<header class="top site-header"><div class="in"><a class="logo" data-logo-link href="/" aria-label="SparkON home">SparkON</a><button type="button" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">Menu</button><nav id="site-nav" aria-label="Main navigation"><a href="/">Discover</a><a href="/math.html">Science</a><a href="/editions.html">The cards</a><a href="/games/">Play together</a><details class="site-more"><summary>Explore</summary><div><a href="/math.html">Mathematics</a><a href="/physics.html">Physics</a><a href="/chemistry.html">Chemistry</a><a href="/biology.html">Biology</a><a href="/timeline.html">Timeline</a><a href="/about.html">About SparkON</a><a href="/print.html">Print cards</a><a href="/order.html">Get the cards</a><a href="/lab-duel.html">Lab Duel</a></div></details><a class="nav-play" href="/games/play.html">Enter a room ↗</a></nav></div></header>
 <section class="hero"><div class="in">
 <div><p class="eyebrow">Math · Physics · Chemistry · Biology</p>
 <h1>Science you can collect.</h1>
-<p class="lead">Every big idea explained free, in plain language. Every idea is also a card. And one mystery card is planned as a single card in the whole world.</p>
+<p class="lead">Every big idea explained free, in plain language. Every idea is also a card. Explore Original, Premium and Hero artwork, with the same science in every edition.</p>
 <div class="cta"><a class="btn" href="math.html">Explore the ideas</a><a class="btn ghost" href="order.html">Get the cards</a></div></div>
-<div><div class="stage"><a href="cards/pi.html"><div class="tilt"><div class="card front r-mystery" style="--g:linear-gradient(140deg,#64D2FF 0%,#0A84FF 48%,#5E5CE6 100%);--ink:#0071E3;--t:#EEF5FF"><div class="digits t">3.1415926535897932384626433832795028841971693993751058209749</div><div class="digits b">445923078164062862089986280348253421170679821480865132823066</div><div class="digits l">4709384460955058223172535940812848111745028410270193852110555964462294895493038196</div><div class="digits r">3383279502884197169399375105820974944592307816406286208998628034825342117067982148086</div><div class="frame">
+<div><div class="stage site-art-showcase" data-public-art><a href="cards/pi.html"><div class="tilt"><div class="card front r-mystery" style="--g:linear-gradient(140deg,#64D2FF 0%,#0A84FF 48%,#5E5CE6 100%);--ink:#0071E3;--t:#EEF5FF"><div class="digits t">3.1415926535897932384626433832795028841971693993751058209749</div><div class="digits b">445923078164062862089986280348253421170679821480865132823066</div><div class="digits l">4709384460955058223172535940812848111745028410270193852110555964462294895493038196</div><div class="digits r">3383279502884197169399375105820974944592307816406286208998628034825342117067982148086</div><div class="frame">
   <div class="top"><div><div class="name">The π Mystery</div><div class="sv">Talet pi</div></div><div class="gem"><span style="font-family:Georgia,serif;font-style:italic;font-size:8pt">π</span></div></div>
   <div class="art"><div class="glow"></div><svg viewBox="0 0 100 70" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF4C2"/><stop offset=".3" stop-color="#E3B64F"/>
@@ -29,7 +29,7 @@
   <div class="foot"><b>First estimate</b> 1650 BC · Rhind Papyrus, Egypt</div>
   <div class="set"><span>SPARKON</span><span>No. 1 / 1</span></div>
 </div><div class="shine"></div></div></div></a></div>
-<p class="note1">The π Mystery · brushed metal · 1 of 1</p></div>
+<p class="note1">π art showcase · one unique collectible per theme</p></div>
 </div></section><main class="wrap">
 <p class="eyebrow">How it works</p>
 <h2 style="margin-top:.2em">Read it. Collect it. Play it.</h2>
@@ -218,4 +218,4 @@
 <div class="demo"><span class="demo-icon" aria-hidden="true">♻</span></div>
 <script src="site.js" defer></script>
 <script src="version-switch.js" defer></script>
-</body></html>
+<script type="module" src="/site-art.js"></script></body></html>

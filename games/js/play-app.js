@@ -92,6 +92,7 @@ function applyThemeUI() {
 
 async function setSkin(pref) {
   themePref = pref;
+  window.SparkONSkin?.set(pref);
   sessionStorage.setItem('sparkonScreenSkin', pref);
   applyThemeUI();
   const u = getAuth()?.currentUser;
@@ -653,3 +654,5 @@ async function boot() {
   }
 }
 boot();
+
+window.addEventListener('sparkon:skinchange',e=>{themePref=e.detail.skin==='original'?'basic':e.detail.skin;applyThemeUI();});
