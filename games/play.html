@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html data-theme="premium" lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Phone · SparkON play</title>
@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="/style.css">
 <link rel="stylesheet" href="/games/css/standard-cards.css">
 <link rel="stylesheet" href="/games/css/edition.css">
+<link rel="stylesheet" href="/games/css/astra-cards.css">
+<link rel="stylesheet" href="/games/css/astra-screens.css">
 </head>
 <body>
 <header class="app">
@@ -21,17 +23,17 @@
 </header>
 <main class="wrap">
   <p id="authStatus" class="muted" aria-live="polite"></p>
-  <section class="panel play-theme-panel" aria-label="Card theme preview">
+  <section class="panel play-theme-panel" aria-label="Screen appearance">
     <h2 class="sr">Theme</h2>
-    <div class="skin-bar" role="group" aria-label="Card theme">
+    <div class="skin-bar" role="group" aria-label="Screen appearance">
       <button type="button" id="skinOriginal" aria-pressed="true">Original</button>
       <button type="button" id="skinPremium" aria-pressed="false">Premium</button>
       <button type="button" id="skinHero" aria-pressed="false">Hero</button>
     </div>
-    <p id="skinHelp" class="muted">Preview any skin now — scoring identical. Ownership gating later.</p>
+    <p id="skinHelp" class="muted">Choose your screen style. Cards keep their own editions.</p>
   </section>
   <div id="view-home">
-    <h1>Phone controller</h1>
+    <p class="astra-eyebrow">SCIENCE. COLLECT. CONNECT.</p><h1>Your next<br>bright idea.</h1>
     <p class="muted">Create a room as host, or join with a code. 2–6 players. TVs pair separately.</p>
     <div class="notice host-trust">HOST-TRUSTED pilot: when you host, your browser loads the answer key. Family OK — not ranked/rewards-ready.</div>
     <label for="nick">Nickname (shown on TVs — not your Google name)</label>
@@ -51,7 +53,7 @@
 
   <div id="view-lobby" class="hide">
     <p class="badge">Lobby · <span id="roomCodeLabel"></span> · 2–6 players</p>
-    <h1>Players</h1>
+    <p class="astra-eyebrow">THE GATHERING</p><h1>Your room. Your people.</h1>
     <div id="playerSlots" class="grid2"></div>
     <div id="pendingJoiners"></div>
     <h2>Displays <span class="muted" id="displayCount">0 / 2</span></h2>

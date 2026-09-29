@@ -1,3 +1,4 @@
+import { loadAstraContent, renderAstraCard } from './astra-cards.js';
 /** Card rendering: Standard/Original prefer Claude standard-cards.json HTML fronts;
  *  Premium/Hero = Astra v6 art crops. Falls back to original-art.json if a concept is missing. */
 import { CONCEPTS } from './collection.mjs';
@@ -23,7 +24,7 @@ export async function loadStandardCards() {
 
 /** Ensure both art sources are ready (standard preferred, original-art fallback). */
 export async function loadCardArt() {
-  await Promise.all([loadStandardCards(), loadOriginalArt()]);
+  await Promise.all([loadStandardCards(), loadOriginalArt(), loadAstraContent()]);
   return { standardFronts, originalArt };
 }
 
@@ -81,43 +82,7 @@ export function renderOriginalCard(conceptId, { compact = false } = {}) {
 }
 
 /** Premium / Hero edition card (Astra v6 crops). Gameplay identical. */
-export function renderEditionCard(instance) {
-  const c = CONCEPTS.find(x => x.id === instance.conceptId);
-  if (!c) return el('div', '', 'Unknown');
-  const edClass = (instance.edition === 'basic' || instance.edition === 'standard') ? 'standard' : instance.edition;
-  const card = el('article', `science-card ${edClass} subject-${c.subject.toLowerCase()}`);
-  const body = el('div', 'card-hit');
-  const top = el('div', 'card-top');
-  top.append(el('span', 'mini-wordmark', 'SPARK⏻N'), el('span', 'subject-name', c.subject.toUpperCase()));
-  const art = el('div', 'art');
-  art.setAttribute('aria-hidden', 'true');
-  if (instance.edition === 'premium' && Number.isInteger(c.art)) {
-    const img = document.createElement('img');
-    img.src = '/games/assets/premium-concept.png';
-    img.alt = '';
-    img.loading = 'lazy';
-    img.style.setProperty('--crop', `${-((28 + 438 * c.art) / 400) * 100}%`);
-    art.append(img);
-  } else if (instance.edition === 'hero' && HERO_COORDS[c.id]) {
-    const [x, y] = HERO_COORDS[c.id];
-    art.classList.add('hero-art');
-    art.style.backgroundImage = 'url(/games/assets/hero-edition.png)';
-    art.style.backgroundSize = `${1373 / 355 * 100}% ${1145 / 300 * 100}%`;
-    art.style.backgroundPosition = `${x / (1373 - 355) * 100}% ${y / (1145 - 300) * 100}%`;
-  } else {
-    art.append(el('span', 'symbol', c.symbol));
-  }
-  const copy = el('div', 'card-copy');
-  copy.append(el('h3', '', c.name), el('p', 'formula', c.formula));
-  const foot = el('div', 'card-foot');
-  foot.append(
-    el('span', '', instance.edition === 'hero' ? '✧ Hero' : instance.edition === 'premium' ? '✦ Premium' : ''), // standard: site shiny, no edition label
-    el('span', '', c.id)
-  );
-  body.append(top, art, copy, foot);
-  card.append(body);
-  return card;
-}
+export function renderEditionCard(instance) { return renderAstraCard(instance); }
 
 export function renderCardInstance(instance, opts) {
   if (instance.edition === 'premium' || instance.edition === 'hero') {

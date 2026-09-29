@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="tv">
+<html data-theme="premium" lang="en" class="tv">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Big screen · SparkON</title>
@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="/style.css">
 <link rel="stylesheet" href="/games/css/standard-cards.css">
 <link rel="stylesheet" href="/games/css/edition.css">
+<link rel="stylesheet" href="/games/css/astra-cards.css">
+<link rel="stylesheet" href="/games/css/astra-screens.css">
 </head>
 <body>
 <header class="app">
@@ -15,6 +17,7 @@
   <span class="badge" id="conn">Connecting…</span>
 </header>
 <main class="wrap wide">
+<div class="astra-tv-skin"><label for="tvSkin">Screen style</label><select id="tvSkin"><option value="original">Original</option><option value="premium">Premium</option><option value="hero">Hero</option></select></div>
   <section id="pair" class="panel">
     <p class="badge">TV display · read-only</p>
     <h1>Pair this screen</h1>
@@ -32,6 +35,7 @@
 </main>
 <div id="reconnect" class="reconnecting hide" role="status">Reconnecting…</div>
 <script type="module" src="/games/js/display-app.js"></script>
+<script type="module" src="/games/js/tv-skin.js"></script>
 <script src="/site.js" defer></script>
 </body>
 </html>

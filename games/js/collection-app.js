@@ -8,7 +8,7 @@ import { ensureUserProfile } from './room.js';
 
 const $ = id => document.getElementById(id);
 let cards = [];
-let themePref = 'basic';
+let themePref = sessionStorage.getItem('sparkonScreenSkin') || 'premium';
 let unsub = null;
 
 function updateAccountChip(user) {
@@ -34,8 +34,8 @@ function applySkin() {
   $('skinPremium').disabled = false;
   $('skinHero').disabled = false;
   $('skinHelp').textContent = theme === 'basic'
-    ? 'Original skin preview: Claude shiny cards + classic logo. Gameplay unchanged.'
-    : `${theme === 'hero' ? 'Hero' : 'Premium'} skin preview. Logo updated. Scoring unchanged.`;
+    ? 'Original screen · your cards keep their own editions.'
+    : `${theme === 'hero' ? 'Hero' : 'Premium'} screen · your cards keep their own editions.`;
 }
 
 function render() {
@@ -45,14 +45,7 @@ function render() {
   $('collectionCount').textContent = `${cards.length} cards · ${prem} Premium · ${hero} Hero · π not in packs`;
   const box = $('cards');
   box.replaceChildren();
-  // Original theme: show real owned editions. Premium/Hero preview: skin all cards.
-  const ed = themeAsEdition(themePref);
-  cards.slice().reverse().forEach(inst => {
-    const shown = (themePref === 'basic' || themePref === 'original')
-      ? inst
-      : { ...inst, edition: ed };
-    box.append(renderCardInstance(shown));
-  });
+  cards.slice().reverse().forEach(inst => box.append(renderCardInstance(inst)));
 }
 
 async function bindUser(user) {
@@ -60,14 +53,14 @@ async function bindUser(user) {
   updateAccountChip(user);
   if (!user) {
     cards = guestStarter();
-    themePref = 'basic';
+    themePref = sessionStorage.getItem('sparkonScreenSkin') || 'premium';
     $('authStatus').textContent = 'Guest deck (temporary). Sign in to save across devices.';
     render();
     return;
   }
   if (user.isAnonymous) {
     cards = guestStarter();
-    themePref = 'basic';
+    themePref = sessionStorage.getItem('sparkonScreenSkin') || 'premium';
     $('authStatus').textContent = 'Guest · deck will not sync across devices.';
     render();
     return;
@@ -76,7 +69,7 @@ async function bindUser(user) {
   await ensureUserProfile(user);
   await loadOrCreateCollection(user.uid);
   const profile = await loadProfile(user.uid);
-  themePref = profile.themePref || 'basic';
+  themePref = sessionStorage.getItem('sparkonScreenSkin') || 'premium';
   unsub = await watchCollection(user.uid, (list) => {
     cards = list;
     $('authStatus').textContent = 'Saved to your Google account (Firestore · not Drive).';
@@ -93,6 +86,7 @@ $('btnSignOut').onclick = () => signOut();
 
 async function setSkin(pref) {
   themePref = pref;
+  sessionStorage.setItem('sparkonScreenSkin', pref);
   const u = getAuth()?.currentUser;
   if (u && !u.isAnonymous) await setThemePref(u.uid, pref);
   render();

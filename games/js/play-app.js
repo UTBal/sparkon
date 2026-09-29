@@ -1,3 +1,4 @@
+import { ownedCardFor } from './owned-cards.mjs';
 import {
   initialize, whenReady, signIn, signInAnonymously, ensureSignedIn, signOut, getAuth, initErrorMessage, redirectError, clearRedirectError
 } from './auth.js';
@@ -25,8 +26,10 @@ let selectionRoundId = null;
 let drawnHandRoundId = null;
 let myLocked = false;
 let answerKeyLoaded = false;
-let themePref = 'basic';
+let themePref = sessionStorage.getItem('sparkonScreenSkin') || 'premium';
 let artReady = false;
+let ownedCards = [];
+let accountGeneration = 0;
 
 function show(view) {
   views.forEach(v => {
@@ -82,13 +85,14 @@ function applyThemeUI() {
   const help = $('skinHelp');
   if (help) {
     help.textContent = theme === 'basic'
-      ? 'Original skin preview — Claude shiny fronts. Scoring unchanged.'
-      : `${theme === 'hero' ? 'Hero' : 'Premium'} skin preview — Astra treatment on hand cards. Scoring unchanged.`;
+      ? 'Original screen · cards keep their owned edition.'
+      : `${theme === 'hero' ? 'Hero' : 'Premium'} screen · cards keep their owned edition.`;
   }
 }
 
 async function setSkin(pref) {
   themePref = pref;
+  sessionStorage.setItem('sparkonScreenSkin', pref);
   applyThemeUI();
   const u = getAuth()?.currentUser;
   if (u && !u.isAnonymous) {
@@ -105,6 +109,8 @@ async function setSkin(pref) {
 }
 
 function setAuthUI(user) {
+  const generation = ++accountGeneration;
+  ownedCards = [];
   const isAnon = !!(user && user.isAnonymous);
   $('btnSignIn').classList.toggle('hide', !!user && !isAnon);
   $('btnSignOut').classList.toggle('hide', !user || isAnon);
@@ -112,9 +118,12 @@ function setAuthUI(user) {
   if (user && !isAnon) {
     $('authStatus').textContent = `Signed in as ${user.displayName || user.email || 'Google'} · deck saves to your account`;
     ensureUserProfile(user).then(async () => {
-      await loadOrCreateCollection(user.uid);
+      const loadedCards = await loadOrCreateCollection(user.uid);
+      if (generation !== accountGeneration) return;
+      ownedCards = loadedCards;
       const profile = await loadProfile(user.uid);
-      themePref = profile.themePref || themePref || 'basic';
+      if (generation !== accountGeneration) return;
+      themePref = sessionStorage.getItem('sparkonScreenSkin') || 'premium';
       applyThemeUI();
     }).catch(e => {
       $('authStatus').textContent = 'Signed in, but collection sync failed: ' + e.message;
@@ -271,7 +280,7 @@ function renderRound() {
       wrap.append(renderCardInstance({
         instanceId: `reveal-${rev.correctConcept}`,
         conceptId: rev.correctConcept,
-        edition: themeAsEdition(themePref)
+        edition: ownedCardFor(ownedCards, rev.correctConcept).edition
       }, { compact: true }));
       $('revealPanel').append(wrap);
     }
@@ -323,7 +332,7 @@ function drawHand(round) {
   const hand = $('hand');
   hand.replaceChildren();
   hand.className = 'hand-cards';
-  const edition = themeAsEdition(themePref);
+  // Screen choice never changes the owned card variant.
   round.hand.forEach(id => {
     const c = cards[id];
     const b = document.createElement('button');
@@ -336,7 +345,7 @@ function drawHand(round) {
       const front = renderCardInstance({
         instanceId: `hand-${id}`,
         conceptId: id,
-        edition
+        edition: ownedCardFor(ownedCards, id).edition
       }, { compact: true });
       front.setAttribute('aria-hidden', 'true');
       b.append(front);

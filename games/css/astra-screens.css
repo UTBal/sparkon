@@ -1,0 +1,42 @@
+/* Shared Astra lobby/TV art direction. Screen skins never select card editions. */
+/* The site .logo class paints a background wordmark; image logos already have src. */
+header.app img.logo{background:none!important;object-fit:contain;content:normal}
+:root{--scene-accent:#c4a56a;--scene-glow:#c4a56a12}
+html[data-theme=hero]{--scene-accent:#b8d8f7;--scene-glow:#6f9ac119;--accent:#b8d8f7}
+html:is([data-theme=premium],[data-theme=hero]) body{background-color:#000;background-image:radial-gradient(ellipse at 85% 0,var(--scene-glow),transparent 52%);background-attachment:fixed;font-family:'Space Grotesk','DM Sans',Arial,sans-serif}
+.astra-eyebrow{font-size:11px;letter-spacing:.23em;color:var(--scene-accent);font-weight:700;margin:30px 0 12px}
+html:is([data-theme=premium],[data-theme=hero]) .wrap{max-width:1000px;padding:28px 28px 60px}
+html:is([data-theme=premium],[data-theme=hero]) .wrap.wide{max-width:1440px}
+html:is([data-theme=premium],[data-theme=hero]) header.app{padding:18px 3%;min-height:76px;box-shadow:none;backdrop-filter:blur(18px)}
+html:is([data-theme=premium],[data-theme=hero]) h1{font-size:clamp(32px,5vw,62px);font-weight:500;letter-spacing:-.045em;line-height:1.05;margin:0 0 24px}
+html:is([data-theme=premium],[data-theme=hero]) h2{font-weight:500;letter-spacing:-.02em}
+html:is([data-theme=premium],[data-theme=hero]) .play-theme-panel{padding:8px;background:transparent;border:0;margin:0 0 24px;max-width:560px}
+html:is([data-theme=premium],[data-theme=hero]) .skin-bar{border:1px solid #36383d;padding:5px;border-radius:12px;background:#0c0d10;gap:4px}
+html:is([data-theme=premium],[data-theme=hero]) .skin-bar button{border:0;min-height:44px;padding:10px 18px;border-radius:8px;background:transparent}
+html:is([data-theme=premium],[data-theme=hero]) .skin-bar button[aria-pressed=true]{background:var(--scene-accent);color:#06070a}
+html:is([data-theme=premium],[data-theme=hero]) #skinHelp{font-size:12px;margin:10px 5px 0}
+html:is([data-theme=premium],[data-theme=hero]) #view-home{max-width:680px}
+html:is([data-theme=premium],[data-theme=hero]) #view-lobby>.badge{display:flex;align-items:center;gap:22px;border:1px solid #33363d;border-radius:12px;padding:18px 24px;background:#0b0c0f;font-size:12px;letter-spacing:.08em}
+html:is([data-theme=premium],[data-theme=hero]) #roomCodeLabel{font-size:32px;letter-spacing:.18em;color:var(--scene-accent);font-weight:650}
+html:is([data-theme=premium],[data-theme=hero]) #playerSlots{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:28px 0}
+html:is([data-theme=premium],[data-theme=hero]) .slot{border:1px dashed #393c43;border-radius:12px;padding:24px 18px;min-height:112px;display:flex;flex-direction:column;justify-content:center;background:#08090c}
+html:is([data-theme=premium],[data-theme=hero]) .slot.filled{border:1px solid #41434b;background:linear-gradient(135deg,#1c1e24,#0b0c0f)}
+html:is([data-theme=premium],[data-theme=hero]) .slot .nick{font-size:20px;font-weight:600}
+html:is([data-theme=premium],[data-theme=hero]) .slot .meta{font-size:12px;margin-top:10px}
+html:is([data-theme=premium],[data-theme=hero]) .notice.host-trust{font-size:12px;line-height:1.5;padding:10px 14px;border-left:2px solid var(--scene-accent)}
+html:is([data-theme=premium],[data-theme=hero]) .score-table{background:#0e1014;border:1px solid #353943;border-radius:14px;overflow:hidden}
+html:is([data-theme=premium],[data-theme=hero]) .score-table td,html:is([data-theme=premium],[data-theme=hero]) .score-table th{padding:18px 22px;border-color:#353943}
+.astra-tv-skin{display:flex;justify-content:flex-end;gap:14px;align-items:center;margin:0 0 26px}
+.astra-tv-skin label{font-size:13px;margin:0}.astra-tv-skin select{width:auto;min-width:150px;font-size:15px}
+
+html.tv:is([data-theme=premium],[data-theme=hero]) .wrap{max-width:1500px;padding:30px 5%}
+html.tv:is([data-theme=premium],[data-theme=hero]) #pair{position:relative;max-width:1200px;margin:3vh auto;background:radial-gradient(ellipse at 100% 0,var(--scene-glow),transparent 70%),#08090b;border:1px solid #424149;padding:clamp(30px,5vw,80px);border-radius:24px;overflow:hidden}
+html.tv:is([data-theme=premium],[data-theme=hero]) #pair:after{content:'';position:absolute;right:-160px;bottom:-210px;width:550px;height:550px;border:1px solid #b9a57535;box-shadow:0 0 0 40px #b9a57509,0 0 0 100px #b9a57506;border-radius:50%;pointer-events:none}
+html.tv:is([data-theme=premium],[data-theme=hero]) .big-code{font-size:clamp(80px,12vw,180px);line-height:1;letter-spacing:.13em;text-align:left;font-weight:500;color:var(--scene-accent);margin:45px 0}
+html.tv:is([data-theme=premium],[data-theme=hero]) #pair>p{max-width:850px;font-size:clamp(18px,2vw,26px)}
+html.tv:is([data-theme=premium],[data-theme=hero]) #prompt{font-size:clamp(24px,2.7vw,40px);line-height:1.4;max-width:1200px;color:#e7e3db}
+html.tv:is([data-theme=premium],[data-theme=hero]) #extra ul{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;list-style:none;padding:0;margin:0}
+html.tv:is([data-theme=premium],[data-theme=hero]) #extra li{padding:24px;border:1px solid #40434b;border-radius:12px;background:#15171d;font-size:26px}
+@media(max-width:600px){html:is([data-theme=premium],[data-theme=hero]) .wrap{padding:18px 14px 40px}html:is([data-theme=premium],[data-theme=hero]) #playerSlots{grid-template-columns:repeat(2,minmax(0,1fr))}html:is([data-theme=premium],[data-theme=hero]) #view-lobby>.badge{flex-wrap:wrap;gap:8px}html:is([data-theme=premium],[data-theme=hero]) .slot{padding:18px 12px}html:is([data-theme=premium],[data-theme=hero]) .slot .nick{font-size:17px}}
+
+@media(min-width:900px){html.tv:is([data-theme=premium],[data-theme=hero]) #pair{padding:40px 45px;min-height:410px;margin:10px auto}html.tv:is([data-theme=premium],[data-theme=hero]) #pair h1{font-size:54px;max-width:55%}html.tv:is([data-theme=premium],[data-theme=hero]) #pair>p{max-width:53%;font-size:19px}html.tv:is([data-theme=premium],[data-theme=hero]) #pair .badge{font-size:12px;letter-spacing:.16em}html.tv:is([data-theme=premium],[data-theme=hero]) #pair .big-code{position:absolute;right:35px;top:105px;font-size:clamp(80px,8vw,140px);margin:0;letter-spacing:.08em}html.tv:is([data-theme=premium],[data-theme=hero]) #pair:after{width:360px;height:360px;bottom:-230px;right:-100px}}
