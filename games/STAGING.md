@@ -46,9 +46,13 @@ Pack: **0.2.0-rc1** (`games/data/pack.public.json`). Host answers: `games/host/a
 
 Static + local practice ships regardless; cloud login may fail until Auth domains are finished.
 
-## Missing assets (note)
+## Standard card fronts (RC1 zip)
 
-- `standard-cards.json` / dedicated standard-cards CSS not found in Drive handoff; Standard uses existing site shiny card styles in `/games/` + root `style.css`.
+- Installed from `sparkon-pilot-content-rc1.zip`: `games/data/standard-cards.json` + `games/css/standard-cards.css`
+- `games/js/cards.js` prefers Claude HTML fronts from `standard-cards.json` for Standard/Original; Premium/Hero still use Astra edition crops; falls back to `original-art.json` only if a concept is missing
+- Preview (Astra, not required in public nav): https://sparkon.cards/games/standard-cards-preview.html
+- Pack notes / validator: `games/content-rc1/CHANGES.md`, `games/content-rc1/validate_pack.py`
+- π front exists in `standard-cards.json` for collection later; π stays out of packs
 
 ## Eureka
 

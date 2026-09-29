@@ -3,7 +3,7 @@ import {
   loadOrCreateCollection, watchCollection, loadProfile, setThemePref, openPackPilot,
   hasPremium, hasHero, resolvedTheme, guestStarter
 } from './deck.js';
-import { loadOriginalArt, renderCardInstance } from './cards.js';
+import { loadCardArt, renderCardInstance } from './cards.js';
 import { ensureUserProfile } from './room.js';
 
 const $ = id => document.getElementById(id);
@@ -107,7 +107,7 @@ document.querySelectorAll('.open-pack').forEach(btn => {
 });
 
 async function boot() {
-  await loadOriginalArt();
+  await loadCardArt();
   try {
     await initialize(user => {
       $('btnSignIn').classList.toggle('hide', !!user);

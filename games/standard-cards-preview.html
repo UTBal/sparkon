@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SparkON standard cards · pilot preview</title>
+<link rel="stylesheet" href="/games/css/standard-cards.css">
+<link rel="stylesheet" href="/style.css">
+<style>
+  body{background:#F5F5F7;margin:20px;font-family:-apple-system,Inter,Arial,sans-serif;color:#1D1D1F}
+  h1{font-size:22px;margin:0 0 8px}
+  .muted{color:#6E6E73;font-size:14px;margin:0 0 20px}
+  .grid{display:flex;flex-wrap:wrap;gap:10px}
+  .cell{display:inline-block;margin:10px;vertical-align:top}
+  .label{font:13px sans-serif;color:#555;text-align:center;margin-top:6px}
+  .err{color:#C00;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<h1>SparkON standard cards for the pilot pack</h1>
+<p class="muted">No edition label. Fronts from <code>/games/data/standard-cards.json</code> + <code>/games/css/standard-cards.css</code>. π included for collection later; not in packs.</p>
+<div id="grid" class="grid"></div>
+<p id="status" class="muted" aria-live="polite">Loading…</p>
+<script type="module">
+const grid = document.getElementById('grid');
+const status = document.getElementById('status');
+try {
+  const res = await fetch('/games/data/standard-cards.json');
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  const fronts = data.fronts || {};
+  const ids = Object.keys(fronts);
+  ids.forEach(id => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    const tilt = document.createElement('div');
+    tilt.className = 'tilt';
+    tilt.innerHTML = fronts[id];
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = id;
+    cell.append(tilt, label);
+    grid.append(cell);
+  });
+  status.textContent = `${ids.length} fronts · version ${data.version || '?'}`;
+} catch (e) {
+  status.className = 'err';
+  status.textContent = 'Failed to load standard-cards.json: ' + e.message;
+}
+</script>
+<script src="/site.js" defer></script>
+</body>
+</html>

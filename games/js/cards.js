@@ -1,12 +1,30 @@
-/** Card rendering: Original = site holographic CSS; Premium/Hero = Astra v6 art crops. */
+/** Card rendering: Standard/Original prefer Claude standard-cards.json HTML fronts;
+ *  Premium/Hero = Astra v6 art crops. Falls back to original-art.json if a concept is missing. */
 import { CONCEPTS } from './collection.mjs';
 
 let originalArt = null;
+let standardFronts = null;
+
 export async function loadOriginalArt() {
   if (originalArt) return originalArt;
   const res = await fetch('/games/data/original-art.json');
   originalArt = await res.json();
   return originalArt;
+}
+
+/** Load Claude RC1 HTML fronts (conceptId → card markup). Safe to call multiple times. */
+export async function loadStandardCards() {
+  if (standardFronts) return standardFronts;
+  const res = await fetch('/games/data/standard-cards.json');
+  const data = await res.json();
+  standardFronts = data.fronts || {};
+  return standardFronts;
+}
+
+/** Ensure both art sources are ready (standard preferred, original-art fallback). */
+export async function loadCardArt() {
+  await Promise.all([loadStandardCards(), loadOriginalArt()]);
+  return { standardFronts, originalArt };
 }
 
 const HERO_COORDS = {
@@ -24,8 +42,15 @@ function el(tag, cls, html) {
   return n;
 }
 
-/** Site-style Original card (common/rare/legendary holographic). */
+/** Site-style Standard/Original card. Prefers standard-cards.json HTML; falls back to original-art. */
 export function renderOriginalCard(conceptId, { compact = false } = {}) {
+  const wrap = el('div', 'tilt sparkon-orig' + (compact ? ' compact' : ''));
+  const html = standardFronts?.[conceptId];
+  if (html) {
+    wrap.innerHTML = html;
+    return wrap;
+  }
+
   const art = originalArt?.[conceptId];
   const concept = CONCEPTS.find(c => c.id === conceptId);
   if (!art || !concept) {
@@ -33,7 +58,6 @@ export function renderOriginalCard(conceptId, { compact = false } = {}) {
     d.textContent = conceptId;
     return d;
   }
-  const wrap = el('div', 'tilt sparkon-orig' + (compact ? ' compact' : ''));
   const card = el('div', `card front ${art.rarity}`);
   card.setAttribute('style', art.style);
   const frame = el('div', 'frame');
