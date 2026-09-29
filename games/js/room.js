@@ -2,13 +2,16 @@
  * Cloud room: create/join by code, host approve, 5 players, 2 displays.
  * Phases: lobby → question → locked → reveal → scores → (next) → finished
  * Host-trusted scoring for pilot (answers loaded only on host path).
+ * Identity: always Firebase Auth uid (Google or anonymous) — never guest-* strings.
  */
-import { whenReady, getDb, fsMod, getAuth } from './auth.js';
+import { whenReady, getDb, fsMod, getAuth, ensureSignedIn } from './auth.js';
 import { ROOMS, CODES, DISPLAY_CODES, USERS } from './paths.js';
 
 const MAX_PLAYERS = 5;
 const MAX_DISPLAYS = 2;
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+const DISPLAY_BIND_KEY = 'sparkonDisplayBind';
 
 export function randomCode(len = 6) {
   const buf = crypto.getRandomValues(new Uint32Array(len));
@@ -17,27 +20,41 @@ export function randomCode(len = 6) {
 export function randomDisplayCode() {
   return String(1000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 9000));
 }
-function guestId() {
-  let id = sessionStorage.getItem('sparkonGuestId');
-  if (!id) {
-    id = 'guest-' + crypto.randomUUID();
-    sessionStorage.setItem('sparkonGuestId', id);
-  }
-  return id;
-}
+
+/** Auth uid only — callers must ensureSignedIn() first for create/join/play. */
 export function currentPlayerId() {
   const u = getAuth()?.currentUser;
-  return u ? u.uid : guestId();
+  if (!u) throw new Error('Sign in (Google or Continue as guest) before playing.');
+  return u.uid;
 }
 export function isGuest() {
   const u = getAuth()?.currentUser;
   return !u || !!u.isAnonymous;
 }
 
+export function loadDisplayBind() {
+  try {
+    const raw = sessionStorage.getItem(DISPLAY_BIND_KEY);
+    if (!raw) return null;
+    const b = JSON.parse(raw);
+    if (b && b.displayId && b.roomId && b.status === 'paired') return b;
+  } catch { /* ignore */ }
+  return null;
+}
+export function saveDisplayBind(bind) {
+  sessionStorage.setItem(DISPLAY_BIND_KEY, JSON.stringify(bind));
+  if (bind.displayId) sessionStorage.setItem('sparkonDisplayId', bind.displayId);
+  if (bind.roomId) sessionStorage.setItem('sparkonDisplayRoomId', bind.roomId);
+}
+export function clearDisplayBind() {
+  sessionStorage.removeItem(DISPLAY_BIND_KEY);
+  sessionStorage.removeItem('sparkonDisplayRoomId');
+}
+
 export async function ensureUserProfile(user) {
   await whenReady();
   const f = fsMod(), db = getDb();
-  if (!user) return;
+  if (!user || user.isAnonymous) return;
   const ref = f.doc(db, USERS, user.uid);
   const snap = await f.getDoc(ref);
   if (!snap.exists()) {
@@ -54,6 +71,7 @@ export async function ensureUserProfile(user) {
 
 export async function createRoom({ nickname, homeLabel = '' } = {}) {
   await whenReady();
+  await ensureSignedIn();
   const f = fsMod(), db = getDb();
   const hostId = currentPlayerId();
   const nick = (nickname || 'Host').trim().slice(0, 24) || 'Host';
@@ -79,7 +97,7 @@ export async function createRoom({ nickname, homeLabel = '' } = {}) {
           packId: 'sparkon-family-01',
           mainRoundIds: ['R01','R02','R03','R04','R05','R06','R07','R08'],
           scores: {},
-          publicState: { answeredCount: 0, readyCount: 0, displayCount: 0, displayCount: 0 },
+          publicState: { answeredCount: 0, readyCount: 0, playerCount: 0, displayCount: 0 },
           reveal: null,
           createdAt: f.serverTimestamp(),
           updatedAt: f.serverTimestamp(),
@@ -110,6 +128,7 @@ export async function createRoom({ nickname, homeLabel = '' } = {}) {
 
 export async function requestJoin({ code, nickname, homeLabel = '' } = {}) {
   await whenReady();
+  await ensureSignedIn();
   const f = fsMod(), db = getDb();
   const clean = String(code || '').trim().toUpperCase();
   const codeSnap = await f.getDoc(f.doc(db, CODES, clean));
@@ -135,7 +154,6 @@ export async function requestJoin({ code, nickname, homeLabel = '' } = {}) {
   }
   if (approved.length >= MAX_PLAYERS) throw new Error('Room is full (5 players).');
   const nick = (nickname || 'Player').trim().slice(0, 24) || 'Player';
-  // Host must approve joiners (link/code discovery is not membership). Cap checked on approve too.
   if (members.length >= MAX_PLAYERS + 3) throw new Error('Too many pending joiners. Ask the host.');
   await f.setDoc(f.doc(db, ROOMS, roomId, 'members', uid), {
     nickname: nick,
@@ -154,12 +172,14 @@ export async function requestJoin({ code, nickname, homeLabel = '' } = {}) {
 
 export async function setReady(roomId, memberId, ready) {
   await whenReady();
+  await ensureSignedIn();
   const f = fsMod(), db = getDb();
   await f.updateDoc(f.doc(db, ROOMS, roomId, 'members', memberId), { ready: !!ready, connected: true });
 }
 
 export async function approveMember(roomId, memberId, approved = true) {
   await whenReady();
+  await ensureSignedIn();
   const f = fsMod(), db = getDb();
   if (approved) {
     const membersSnap = await f.getDocs(f.collection(db, ROOMS, roomId, 'members'));
@@ -169,10 +189,15 @@ export async function approveMember(roomId, memberId, approved = true) {
   await f.updateDoc(f.doc(db, ROOMS, roomId, 'members', memberId), { approved: !!approved });
 }
 
+/**
+ * Mint a waiting TV pairing code. displayId = auth.uid (anon OK) for rules.
+ * Skipped by display-app when a paired bind already exists in sessionStorage.
+ */
 export async function registerDisplayPairing() {
   await whenReady();
+  await ensureSignedIn();
   const f = fsMod(), db = getDb();
-  const displayId = sessionStorage.getItem('sparkonDisplayId') || crypto.randomUUID();
+  const displayId = getAuth().currentUser.uid;
   sessionStorage.setItem('sparkonDisplayId', displayId);
   let code, attempts = 0;
   while (attempts++ < 10) {
@@ -201,6 +226,7 @@ export async function registerDisplayPairing() {
 
 export async function attachDisplayToRoom(roomId, displayCode) {
   await whenReady();
+  await ensureSignedIn();
   const f = fsMod(), db = getDb();
   const code = String(displayCode || '').trim();
   const codeRef = f.doc(db, DISPLAY_CODES, code);
@@ -208,15 +234,32 @@ export async function attachDisplayToRoom(roomId, displayCode) {
   if (!snap.exists() || snap.data().status !== 'waiting') throw new Error('Display code not found or already paired.');
   if (snap.data().expiresAt && Date.now() > snap.data().expiresAt) throw new Error('Display code expired. Refresh the TV.');
   const displays = await f.getDocs(f.collection(db, ROOMS, roomId, 'displays'));
-  if (displays.size >= MAX_DISPLAYS) throw new Error('Already have 2 displays paired.');
   const displayId = snap.data().displayId;
+  // Re-bind same displayId (TV refresh mid-game) does not consume an extra slot
+  const already = displays.docs.some(d => d.id === displayId);
+  if (!already && displays.size >= MAX_DISPLAYS) throw new Error('Already have 2 displays paired.');
   await f.setDoc(f.doc(db, ROOMS, roomId, 'displays', displayId), {
     pairedAt: f.serverTimestamp(),
     readOnly: true,
-    label: `TV ${displays.size + 1}`
-  });
+    label: already
+      ? (displays.docs.find(d => d.id === displayId)?.data()?.label || 'TV')
+      : `TV ${displays.size + 1}`,
+    lastSeen: f.serverTimestamp()
+  }, { merge: true });
   await f.updateDoc(codeRef, { status: 'paired', roomId, pairedAt: f.serverTimestamp() });
   return { displayId };
+}
+
+/** Heartbeat for a paired display doc (TV resume / keep-alive). */
+export async function touchDisplay(roomId, displayId) {
+  await whenReady();
+  await ensureSignedIn();
+  const f = fsMod(), db = getDb();
+  try {
+    await f.updateDoc(f.doc(db, ROOMS, roomId, 'displays', displayId), {
+      lastSeen: f.serverTimestamp()
+    });
+  } catch { /* ignore if not yet attached */ }
 }
 
 export function watchDisplayPairing(code, onUpdate) {
@@ -226,11 +269,44 @@ export function watchDisplayPairing(code, onUpdate) {
   });
 }
 
+/**
+ * Watch room + members + displays.
+ * Answers: host gets full collection; others query own uid only (reveal-gated rules).
+ */
 export function watchRoom(roomId, handlers) {
   const f = fsMod(), db = getDb();
   const unsubs = [];
+  let answersUnsub = null;
+  let answersMode = null; // 'full' | 'own'
+
+  const setupAnswers = (hostUid, phase) => {
+    const uid = getAuth()?.currentUser?.uid;
+    if (!uid) return;
+    const needFull = hostUid === uid || ['reveal', 'scores', 'finished'].includes(phase);
+    const mode = needFull ? 'full' : 'own';
+    if (answersUnsub && answersMode === mode) return;
+    if (answersUnsub) { answersUnsub(); answersUnsub = null; }
+    answersMode = mode;
+    if (mode === 'full') {
+      answersUnsub = f.onSnapshot(f.collection(db, ROOMS, roomId, 'answers'), (snap) => {
+        handlers.onAnswers?.(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      }, (err) => handlers.onError?.(err));
+    } else {
+      const q = f.query(
+        f.collection(db, ROOMS, roomId, 'answers'),
+        f.where('uid', '==', uid)
+      );
+      answersUnsub = f.onSnapshot(q, (snap) => {
+        handlers.onAnswers?.(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      }, (err) => handlers.onError?.(err));
+    }
+  };
+
   unsubs.push(f.onSnapshot(f.doc(db, ROOMS, roomId), (snap) => {
-    if (snap.exists()) handlers.onRoom?.({ id: snap.id, ...snap.data() });
+    if (!snap.exists()) return;
+    const data = { id: snap.id, ...snap.data() };
+    handlers.onRoom?.(data);
+    setupAnswers(data.hostUid, data.phase);
   }, (err) => handlers.onError?.(err)));
   unsubs.push(f.onSnapshot(f.collection(db, ROOMS, roomId, 'members'), (snap) => {
     handlers.onMembers?.(snap.docs.map(d => ({ id: d.id, ...d.data() })));
@@ -238,14 +314,16 @@ export function watchRoom(roomId, handlers) {
   unsubs.push(f.onSnapshot(f.collection(db, ROOMS, roomId, 'displays'), (snap) => {
     handlers.onDisplays?.(snap.docs.map(d => ({ id: d.id, ...d.data() })));
   }, (err) => handlers.onError?.(err)));
-  unsubs.push(f.onSnapshot(f.collection(db, ROOMS, roomId, 'answers'), (snap) => {
-    handlers.onAnswers?.(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-  }, (err) => handlers.onError?.(err)));
-  return () => unsubs.forEach(u => u && u());
+
+  return () => {
+    unsubs.forEach(u => u && u());
+    if (answersUnsub) answersUnsub();
+  };
 }
 
 export async function hostAdvance(roomId, expectedRevision, patch) {
   await whenReady();
+  await ensureSignedIn();
   const f = fsMod(), db = getDb();
   const ref = f.doc(db, ROOMS, roomId);
   await f.runTransaction(db, async (tx) => {
@@ -255,16 +333,23 @@ export async function hostAdvance(roomId, expectedRevision, patch) {
     if (data.revision !== expectedRevision) throw new Error('Stale revision — refresh and try again.');
     const hostId = currentPlayerId();
     if (data.hostUid !== hostId) throw new Error('Only the host can advance the game.');
-    tx.update(ref, {
+    const next = {
       ...patch,
       revision: data.revision + 1,
       updatedAt: f.serverTimestamp()
-    });
+    };
+    // Reset answeredCount when entering a new question phase
+    if (patch.phase === 'question') {
+      const ps = { ...(data.publicState || {}), ...(patch.publicState || {}), answeredCount: 0 };
+      next.publicState = ps;
+    }
+    tx.update(ref, next);
   });
 }
 
 export async function submitAnswer(roomId, roundId, { conceptId, optionId }) {
   await whenReady();
+  await ensureSignedIn();
   const f = fsMod(), db = getDb();
   const uid = currentPlayerId();
   const answerId = `${roundId}_${uid}`;
@@ -287,6 +372,12 @@ export async function submitAnswer(roomId, roundId, { conceptId, optionId }) {
       optionId,
       locked: true,
       lockedAt: f.serverTimestamp()
+    });
+    const ps = { ...(r.publicState || {}) };
+    ps.answeredCount = (ps.answeredCount || 0) + 1;
+    tx.update(roomRef, {
+      publicState: ps,
+      updatedAt: f.serverTimestamp()
     });
   });
   return answerId;

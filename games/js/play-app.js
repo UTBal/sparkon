@@ -1,5 +1,5 @@
 import {
-  initialize, whenReady, signIn, signInAnonymously, signOut, getAuth, initErrorMessage, redirectError, clearRedirectError
+  initialize, whenReady, signIn, signInAnonymously, ensureSignedIn, signOut, getAuth, initErrorMessage, redirectError, clearRedirectError
 } from './auth.js';
 import {
   createRoom, requestJoin, setReady, watchRoom, hostAdvance, submitAnswer,
@@ -145,6 +145,10 @@ function renderRound() {
   $('btnHostLock').classList.toggle('hide', !(host && room.phase === 'question'));
   $('btnHostReveal').classList.toggle('hide', !(host && (room.phase === 'locked' || room.phase === 'question')));
   $('btnHostNext').classList.toggle('hide', !(host && (room.phase === 'reveal' || room.phase === 'scores')));
+  const pairPanel = $('pairTvDuringPlay');
+  if (pairPanel) {
+    pairPanel.classList.toggle('hide', !(host && room.phase !== 'finished'));
+  }
 
   const myAns = answers.find(a => a.roundId === room.roundId && a.uid === currentPlayerId());
   myLocked = !!(myAns && myAns.locked);
@@ -158,8 +162,10 @@ function renderRound() {
     $('playControls').classList.add('hide');
     $('revealPanel').classList.add('hide');
     $('waitPanel').classList.remove('hide');
-    const count = answers.filter(a => a.roundId === room.roundId && a.locked).length;
     const players = members.filter(m => m.approved).length;
+    const count = isHost()
+      ? answers.filter(a => a.roundId === room.roundId && a.locked).length
+      : (room.publicState?.answeredCount ?? answers.filter(a => a.roundId === room.roundId && a.locked).length);
     const cards = cardsById();
     $('waitPanel').innerHTML = myLocked
       ? `<p>Submitted · you chose <strong>${escape(cards[myAns.conceptId]?.title || myAns.conceptId)}</strong> · option ${escape(myAns.optionId)}</p>
@@ -316,7 +322,7 @@ function attachWatch(roomId) {
     onAnswers: (a) => { answers = a; onState(); },
     onError: () => $('reconnect').classList.remove('hide')
   });
-  markConnected(roomId, currentPlayerId());
+  try { markConnected(roomId, currentPlayerId()); } catch { /* not signed in yet */ }
 }
 
 function escape(s) {
@@ -381,16 +387,23 @@ $('btnReady').onclick = async () => {
   await setReady(room.id, m.id, !m.ready);
 };
 
-$('btnPairTv').onclick = async () => {
+async function pairTvFromInput(inputEl, statusEl) {
   if (!room || !isHost()) { alert('Only the host pairs TVs.'); return; }
+  if (room.phase === 'finished') { alert('Game finished — start a new room to pair TVs.'); return; }
   try {
-    await attachDisplayToRoom(room.id, $('tvCode').value);
-    $('tvCode').value = '';
-    $('lobbyStatus').textContent = 'TV paired.';
+    await attachDisplayToRoom(room.id, inputEl.value);
+    inputEl.value = '';
+    if (statusEl) statusEl.textContent = 'TV paired.';
+    if ($('lobbyStatus')) $('lobbyStatus').textContent = 'TV paired.';
   } catch (e) {
     alert(e.message || String(e));
   }
-};
+}
+$('btnPairTv').onclick = () => pairTvFromInput($('tvCode'), $('lobbyStatus'));
+const btnPairTvPlay = $('btnPairTvPlay');
+if (btnPairTvPlay) {
+  btnPairTvPlay.onclick = () => pairTvFromInput($('tvCodePlay'), $('pairTvPlayStatus'));
+}
 
 $('btnStart').onclick = async () => {
   if (!room || !isHost()) return;
@@ -502,10 +515,15 @@ async function boot() {
     $('authStatus').textContent = initErrorMessage(e);
   }
   await loadPack();
-  // resume
+  // resume prior room if Auth session still present (anon or Google)
   const rid = sessionStorage.getItem('sparkonRoomId');
-  if (rid) {
+  if (rid && getAuth()?.currentUser) {
     try { attachWatch(rid); } catch { /* fresh */ }
+  } else if (rid) {
+    try {
+      await ensureSignedIn();
+      attachWatch(rid);
+    } catch { /* fresh home */ }
   }
 }
 boot();

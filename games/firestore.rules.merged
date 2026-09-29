@@ -1,9 +1,13 @@
-// SparkON least-privilege section for board-18d33 (paste inside
-// match /databases/{database}/documents { ... } alongside Whiteboard).
-// Do NOT weaken users/{userId}/notes/{noteId}.
-// NOT deployed from this box — Alex/Builder must publish in Firebase Console.
-// Guests/TVs: Firebase Anonymous Auth. hostUid / member ids / displayId = auth.uid.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
 
+    // ===== existing Whiteboard (KEEP — do not weaken) =====
+    match /users/{userId}/notes/{noteId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ===== SparkON least-privilege pilot =====
     function signedIn() { return request.auth != null; }
     function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
     function roomPath(roomId) {
@@ -25,7 +29,6 @@
       return roomData(roomId).phase in ['reveal', 'scores', 'finished'];
     }
 
-    // Profile + entitlements (UID-owned)
     match /sparkonUsers/{uid} {
       allow read: if isSelf(uid);
       allow create, update: if isSelf(uid)
@@ -35,7 +38,6 @@
 
       match /collection/{instanceId} {
         allow read: if isSelf(uid);
-        // Pilot client mint — NOT production-safe; create still self-only
         allow create: if isSelf(uid)
           && request.resource.data.conceptId is string
           && request.resource.data.conceptId != 'pi'
@@ -44,7 +46,6 @@
       }
     }
 
-    // Room code directory — code secrecy is discovery control
     match /sparkonCodes/{code} {
       allow read: if true;
       allow create: if signedIn()
@@ -53,7 +54,6 @@
       allow update, delete: if false;
     }
 
-    // TV pairing codes (short-lived). Anon auth OK.
     match /sparkonDisplayCodes/{code} {
       allow read: if signedIn() || resource.data.status == 'waiting';
       allow create: if signedIn()
@@ -61,7 +61,6 @@
         && request.resource.data.displayId == request.auth.uid
         && request.resource.data.roomId == null
         && request.resource.data.keys().hasOnly(['displayId', 'status', 'roomId', 'createdAt', 'expiresAt']);
-      // waiting → paired with roomId (host attach); displayId immutable
       allow update: if signedIn()
         && resource.data.status == 'waiting'
         && request.resource.data.status == 'paired'
@@ -75,7 +74,6 @@
       allow create: if signedIn()
         && request.resource.data.hostUid == request.auth.uid
         && request.resource.data.phase == 'lobby';
-      // Host advances phase/scores. Members may bump publicState only (answeredCount).
       allow update: if signedIn() && request.resource.data.hostUid == resource.data.hostUid && (
         resource.data.hostUid == request.auth.uid
         || (
@@ -91,7 +89,6 @@
       match /members/{memberId} {
         allow read: if signedIn()
           && (isRoomHost(roomId) || isMember(roomId) || isPairedDisplay(roomId));
-        // Self-create only (no room get — same-txn createRoom writes room+member together)
         allow create: if signedIn()
           && request.auth.uid == memberId
           && request.resource.data.nickname is string
@@ -142,7 +139,8 @@
       }
     }
 
-    // Optional alternate collection root (still never notes)
     match /users/{uid}/sparkon/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
+  }
+}

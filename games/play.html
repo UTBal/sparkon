@@ -72,6 +72,16 @@
     </section>
     <section id="waitPanel" class="panel hide" aria-live="polite"></section>
     <section id="revealPanel" class="panel hide" aria-live="polite"></section>
+    <details id="pairTvDuringPlay" class="panel hide">
+      <summary>Pair TV</summary>
+      <p class="muted">Re-bind a refreshed TV mid-game. Enter the code shown on the TV.</p>
+      <label for="tvCodePlay">TV code</label>
+      <div class="actions">
+        <input id="tvCodePlay" maxlength="4" inputmode="numeric" placeholder="1234" style="flex:1">
+        <button type="button" id="btnPairTvPlay">Pair TV</button>
+      </div>
+      <p id="pairTvPlayStatus" class="muted" aria-live="polite"></p>
+    </details>
     <div class="actions">
       <button type="button" class="primary hide" id="btnHostNext">Host: next</button>
       <button type="button" class="hide" id="btnHostLock">Host: lock answers</button>

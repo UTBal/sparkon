@@ -1,9 +1,13 @@
-import { initialize, whenReady, initErrorMessage } from './auth.js';
-import { registerDisplayPairing, watchDisplayPairing, watchRoom } from './room.js';
+import { initialize, whenReady, ensureSignedIn, initErrorMessage } from './auth.js';
+import {
+  registerDisplayPairing, watchDisplayPairing, watchRoom,
+  loadDisplayBind, saveDisplayBind, touchDisplay
+} from './room.js';
 
 const $ = id => document.getElementById(id);
 let pack = null;
 let unsubRoom = null;
+let heartbeatTimer = null;
 
 async function loadPack() {
   const res = await fetch('/games/data/pack.public.json');
@@ -42,8 +46,9 @@ function showBoard(room, members, answers) {
   if (phase === 'question' || phase === 'locked') {
     $('title').textContent = round ? `Round ${(room.roundIndex || 0) + 1}: ${round.title}` : 'Round';
     $('prompt').textContent = round?.prompt || '';
-    const count = answers.filter(a => a.roundId === room.roundId && a.locked).length;
     const players = members.filter(m => m.approved).length;
+    // Prefer publicState (reveal-gated answers — TV cannot list others' answers mid-round)
+    const count = room.publicState?.answeredCount ?? answers.filter(a => a.roundId === room.roundId && a.locked).length;
     extra.textContent = phase === 'locked'
       ? `Answers locked · ${count} / ${players} submitted`
       : `Answer on your phones · ${count} / ${players} submitted`;
@@ -113,31 +118,72 @@ function showBoard(room, members, answers) {
   }
 }
 
+function attachRoomWatch(roomId, displayId) {
+  if (unsubRoom) unsubRoom();
+  if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
+  let room, members = [], answers = [];
+  unsubRoom = watchRoom(roomId, {
+    onRoom: (r) => { room = r; if (room) showBoard(room, members, answers); },
+    onMembers: (m) => { members = m; if (room) showBoard(room, members, answers); },
+    onDisplays: (d) => {
+      if (room) {
+        room.publicState = { ...(room.publicState || {}), displayCount: d.length };
+        showBoard(room, members, answers);
+      }
+    },
+    onAnswers: (a) => { answers = a; if (room) showBoard(room, members, answers); },
+    onError: (err) => {
+      $('reconnect').classList.remove('hide');
+      console.warn(err);
+    }
+  });
+  if (displayId) {
+    touchDisplay(roomId, displayId);
+    heartbeatTimer = setInterval(() => touchDisplay(roomId, displayId), 60_000);
+  }
+}
+
+async function startPairingFlow() {
+  const { code, displayId } = await registerDisplayPairing();
+  $('pair').classList.remove('hide');
+  $('board').classList.add('hide');
+  $('pairCode').textContent = code;
+  $('conn').textContent = 'Ready to pair';
+  $('pairStatus').textContent = 'Waiting for host…';
+  watchDisplayPairing(code, (data) => {
+    if (data.status === 'paired' && data.roomId) {
+      $('pairStatus').textContent = 'Paired! Loading room…';
+      saveDisplayBind({
+        displayId: data.displayId || displayId,
+        roomId: data.roomId,
+        code,
+        status: 'paired',
+        pairedAt: Date.now()
+      });
+      attachRoomWatch(data.roomId, data.displayId || displayId);
+    }
+  });
+}
+
 async function boot() {
   try {
     await initialize(() => {});
     await whenReady();
+    await ensureSignedIn();
     await loadPack();
-    const { code } = await registerDisplayPairing();
-    $('pairCode').textContent = code;
-    $('conn').textContent = 'Ready to pair';
-    watchDisplayPairing(code, (data) => {
-      if (data.status === 'paired' && data.roomId) {
-        $('pairStatus').textContent = 'Paired! Loading room…';
-        if (unsubRoom) unsubRoom();
-        let room, members = [], answers = [];
-        unsubRoom = watchRoom(data.roomId, {
-          onRoom: (r) => { room = r; if (room) showBoard(room, members, answers); },
-          onMembers: (m) => { members = m; if (room) showBoard(room, members, answers); },
-          onDisplays: (d) => { if (room) { room.publicState = { ...(room.publicState || {}), displayCount: d.length }; showBoard(room, members, answers); } },
-          onAnswers: (a) => { answers = a; if (room) showBoard(room, members, answers); },
-          onError: (err) => {
-            $('reconnect').classList.remove('hide');
-            console.warn(err);
-          }
-        });
-      }
-    });
+
+    const bind = loadDisplayBind();
+    const user = (await ensureSignedIn());
+    if (bind?.roomId && bind?.displayId && bind.displayId === user.uid) {
+      // Resume mid-game without minting a new waiting code
+      $('pairStatus').textContent = 'Resuming paired display…';
+      $('conn').textContent = 'Resuming…';
+      attachRoomWatch(bind.roomId, bind.displayId);
+      return;
+    }
+    // Auth uid changed (new anon session) — need a fresh pair code; host can re-bind mid-game
+
+    await startPairingFlow();
   } catch (e) {
     $('pairStatus').textContent = initErrorMessage(e) || e.message;
     $('conn').textContent = 'Error';

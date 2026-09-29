@@ -103,12 +103,21 @@ export async function signIn() {
   }
 }
 
-
 export async function signInAnonymously() {
   await whenReady();
   if (initError || !auth || !a) throw new Error(formatInitError(initError));
   await a.setPersistence(auth, a.browserSessionPersistence);
-  await a.signInAnonymously(auth);
+  if (auth.currentUser) return auth.currentUser;
+  const cred = await a.signInAnonymously(auth);
+  return cred.user;
+}
+
+/** Ensure Firebase Auth user (Google or anonymous). Required for least-privilege rules. */
+export async function ensureSignedIn() {
+  await whenReady();
+  if (initError || !auth || !a) throw new Error(formatInitError(initError));
+  if (auth.currentUser) return auth.currentUser;
+  return signInAnonymously();
 }
 
 export async function signOut() { if (auth) await a.signOut(auth); }

@@ -1,0 +1,13 @@
+{
+  "name": "sparkon-rules-tests",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "validate": "node validate-rules.js",
+    "test": "node validate-rules.js && node -e \"console.log('Emulator suite: install JRE then: firebase emulators:exec --only firestore \\\"node rules.emulator.test.js\\\"')\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "firebase": "^11.0.0"
+  }
+}
