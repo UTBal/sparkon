@@ -4,8 +4,9 @@
   var RECYCLE_ICON = '<span class="demo-icon" aria-hidden="true">♻</span>';
 
   // Pages that exist in only one version (path relative to that version root).
+  // When switching FROM that version on these paths, jump to the other version's index.
   var ONLY_IN = {
-    v2: { 'cards/pi.html': true }
+    v2: { 'cards/pi.html': true, 'about.html': true }
   };
 
   function parsePath(pathname) {
@@ -29,6 +30,11 @@
     return parsed.prefix + '/' + other + '/' + parsed.rest;
   }
 
+  function versionRootIndex(href) {
+    var m = href.match(/^(.*\/v[12])\//);
+    return m ? m[1] + '/index.html' : href.replace(/\/[^/]*$/, '/index.html');
+  }
+
   function go() {
     var href = counterpartHref();
     if (!href) return;
@@ -39,7 +45,8 @@
       return;
     }
 
-    var indexFallback = href.replace(/\/[^/]*$/, '/index.html');
+    var indexFallback = versionRootIndex(href);
+
     fetch(href, { method: 'HEAD', cache: 'no-store' })
       .then(function (r) {
         location.href = r.ok ? dest : indexFallback + location.search + location.hash;
