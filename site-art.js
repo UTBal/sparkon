@@ -6,7 +6,7 @@ let edition='premium';
 function renderGallery(){
  if(!gallery)return;
  gallery.replaceChildren();
- for(const c of CONCEPTS){const wrap=document.createElement('div');wrap.append(renderCardInstance({conceptId:c.id,edition}));const p=document.createElement('p');p.className='art-caption';p.textContent=c.rule;wrap.append(p);gallery.append(wrap);}
+ for(const c of [...CONCEPTS,{id:'pi',rule:'π · One unique collectible per theme. Artwork preview only; excluded from random packs.'}]){const wrap=document.createElement('div');wrap.append(renderCardInstance({conceptId:c.id,edition}));const p=document.createElement('p');p.className='art-caption';p.textContent=c.rule;wrap.append(p);gallery.append(wrap);}
  document.querySelectorAll('[data-edition]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.edition===edition)));
 }
 document.querySelectorAll('[data-edition]').forEach(b=>b.addEventListener('click',()=>{edition=b.dataset.edition;renderGallery();}));
