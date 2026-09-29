@@ -468,12 +468,19 @@ if ($('skinOriginal')) $('skinOriginal').onclick = () => setSkin('basic');
 if ($('skinPremium')) $('skinPremium').onclick = () => setSkin('premium');
 if ($('skinHero')) $('skinHero').onclick = () => setSkin('hero');
 
+/* Entering a room must never depend on the deck write (guests have no saved deck). */
+function syncDeckQuietly() {
+  const u = getAuth()?.currentUser;
+  if (!u || u.isAnonymous) return;
+  loadOrCreateCollection(u.uid).catch(e => console.warn('[SparkON] deck sync failed (game continues)', e));
+}
+
 $('btnCreate').onclick = async () => {
   try {
     const nick = $('nick').value.trim() || 'Host';
     const { roomId } = await createRoom({ nickname: nick, homeLabel: $('home').value.trim() });
-    if (getAuth()?.currentUser) await loadOrCreateCollection(getAuth().currentUser.uid);
     attachWatch(roomId);
+    syncDeckQuietly();
   } catch (e) {
     alert(e.message || String(e));
   }
@@ -486,8 +493,8 @@ $('btnJoin').onclick = async () => {
       nickname: $('nick').value.trim() || 'Player',
       homeLabel: $('home').value.trim()
     });
-    if (getAuth()?.currentUser) await loadOrCreateCollection(getAuth().currentUser.uid);
     attachWatch(joined.roomId);
+    syncDeckQuietly();
     if (joined.pending) $('lobbyStatus') && ($('lobbyStatus').textContent = 'Joined — waiting for host approve…');
   } catch (e) {
     alert(e.message || String(e));

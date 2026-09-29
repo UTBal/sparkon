@@ -82,13 +82,10 @@ export async function initialize(onUser) {
 export async function signIn() {
   await whenReady();
   if (initError || !auth || !a) throw new Error(formatInitError(initError));
-  await a.setPersistence(auth, a.browserSessionPersistence);
+  await a.setPersistence(auth, a.browserLocalPersistence);
   const provider = new a.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
-  if (prefersRedirectSignIn()) {
-    await a.signInWithRedirect(auth, provider);
-    return;
-  }
+  // Popup first everywhere: on iPhone the redirect result was dropped (users came back signed out).
   try {
     await a.signInWithPopup(auth, provider);
   } catch (e) {
@@ -96,6 +93,7 @@ export async function signIn() {
       await a.signInWithRedirect(auth, provider);
       return;
     }
+    if (e?.code === 'auth/popup-closed-by-user' || e?.code === 'auth/cancelled-popup-request') return;
     if (e?.code === 'auth/unauthorized-domain') {
       throw new Error(formatInitError(e));
     }

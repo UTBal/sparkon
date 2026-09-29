@@ -23,8 +23,8 @@ async function tryWrite(primaryFn, altFn) {
   } catch (e) {
     const msg = String(e.message || e);
     if (/permission|insufficient|PERMISSION/i.test(msg) || e.code === 'permission-denied') {
-      console.warn('[SparkON] primary path denied, trying users/{uid}/sparkon/', e);
-      return await altFn();
+      console.warn('[SparkON] deck write denied by Firestore rules', e);
+      throw e;
     }
     throw e;
   }
@@ -66,12 +66,7 @@ export async function watchCollection(uid, onCards, onError) {
   try {
     return f.onSnapshot(collectionCol(f, db, uid), (snap) => {
       onCards(snap.docs.map(d => ({ instanceId: d.id, ...d.data() })));
-    }, async (err) => {
-      if (/permission|PERMISSION/i.test(String(err.message)) || err.code === 'permission-denied') {
-        return f.onSnapshot(altCollectionCol(f, db, uid), (snap) => {
-          onCards(snap.docs.map(d => ({ instanceId: d.id, ...d.data() })));
-        }, onError);
-      }
+    }, (err) => {
       onError(err);
     });
   } catch (e) {
