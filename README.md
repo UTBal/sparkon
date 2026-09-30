@@ -12,7 +12,7 @@ Alex’s SparkON education product site (free science study pages, collectible c
 | **Eureka** (school edition — do not change unless asked) | https://sparkon.cards/eurekav1/ |
 
 - Repository root and `/v2/` serve **SparkON**.
-- `/eurekav1/` is the frozen **Eureka** school prototype (Daniel/Leo).
+- `/eurekav1/` is the frozen **Eureka** school prototype (Daniel).
 - Legacy `/v1/...` paths redirect to matching `/eurekav1/...` pages.
 - Legal: [Privacy Policy](privacy.html), [Terms of Use](terms.html).
 - Use the recycle icon (bottom-right) to switch SparkON ↔ Eureka.
