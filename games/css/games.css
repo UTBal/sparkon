@@ -8,6 +8,9 @@ html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);min-height:100dvh}
 a{color:#b9d6ff}
 img.logo{height:36px;width:auto;display:block}
+header.app .logo-lockup{display:inline-flex;align-items:flex-start;flex:0 0 auto;gap:2px;line-height:0;color:#f4f2ed}
+header.app .tm-mark{font-size:9px;font-weight:600;line-height:1;color:inherit;opacity:.7;letter-spacing:0;font-family:Inter,Arial,sans-serif;position:relative;top:-0.05em;pointer-events:none;user-select:none}
+
 .wrap{max-width:820px;margin:auto;padding:16px}
 .wrap.wide{max-width:1200px}
 header.app{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #2a3550;position:sticky;top:0;background:#101626ee;backdrop-filter:blur(8px);z-index:20}

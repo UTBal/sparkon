@@ -129,6 +129,10 @@ footer .in{max-width:1024px;margin:0 auto;padding:18px 16px 28px}
 @media(max-width:600px){.about section{grid-template-columns:1fr;gap:6px}}
 @media print{header.top,.demo,footer,.rarities{display:none}.about p,.about .rlist{font-size:13pt}.about section{break-inside:avoid;padding:14px 0}.panel{display:none}}
 /* SparkON wordmark */.logo{display:block;width:132px;height:21px;background:url(logo.svg) no-repeat left center/contain;font-size:0;color:transparent}.logo i{display:none}
+/* SparkON™ sits beside the SVG wordmark, not inside the cropped logo box. */
+.logo-lockup{display:inline-flex;align-items:flex-start;flex:0 0 auto;gap:2px;line-height:0;text-decoration:none}
+.tm-mark{font-size:8px;font-weight:600;line-height:1;color:var(--ink);opacity:.62;letter-spacing:0;font-style:normal;font-family:Inter,Arial,sans-serif;position:relative;top:-0.05em;text-indent:0;overflow:visible;pointer-events:none;user-select:none;text-decoration:none}
+
 .demo{position:fixed;right:12px;bottom:12px;width:36px;height:36px;box-sizing:border-box;padding:0;justify-content:center;background:rgba(29,29,31,.8);backdrop-filter:blur(10px);color:#fff;border-radius:50%;display:inline-flex;align-items:center;cursor:pointer;user-select:none;-webkit-user-select:none}.demo:hover{background:rgba(29,29,31,.95)}.demo:focus-visible{outline:2px solid #fff;outline-offset:2px}.demo .demo-icon{flex:none;display:inline-block;line-height:1;font-size:19px;opacity:.95}
 
 .card{width:63mm;height:88mm;box-sizing:border-box;border-radius:3.4mm;overflow:hidden;position:relative;padding:1.5mm;

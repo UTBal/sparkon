@@ -87,6 +87,9 @@ html:is([data-theme=premium],[data-theme=hero]) header.site-header a.logo{backgr
 header.site-header{position:sticky;top:0;z-index:40;border-bottom:1px solid var(--line);background:var(--bg);font-family:Inter,Arial,sans-serif}
 header.site-header .in{display:flex;align-items:center;max-width:1280px;margin:0 auto}
 header.site-header a.logo{display:block;overflow:hidden;text-indent:-9999px;background-size:contain;background-repeat:no-repeat;background-position:left center;flex-shrink:0}
+header.site-header .logo-lockup{display:inline-flex;align-items:flex-start;flex:0 0 auto;gap:2px;line-height:0}
+header.site-header .tm-mark{font-size:8px;font-weight:600;line-height:1;color:var(--ink);opacity:.62;letter-spacing:0;font-family:Inter,Arial,sans-serif;position:relative;top:-0.05em;pointer-events:none;user-select:none}
+
 header.site-header nav{display:flex;align-items:center}
 header.site-header nav a{color:var(--ink);text-decoration:none;white-space:nowrap}
 header.site-header .nav-toggle{display:none}
