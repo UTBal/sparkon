@@ -132,6 +132,8 @@ export async function requestJoin({ code, nickname, homeLabel = '' } = {}) {
   await ensureSignedIn();
   const f = fsMod(), db = getDb();
   const clean = String(code || '').trim().toUpperCase();
+  // Empty path segment → Firestore "odd number of segments" on sparkonCodes alone
+  if (!clean) throw new Error('Enter the 6-letter room code from the host.');
   const codeSnap = await f.getDoc(f.doc(db, CODES, clean));
   if (!codeSnap.exists()) throw new Error('Room code not found.');
   const roomId = codeSnap.data().roomId;
