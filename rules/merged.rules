@@ -1,0 +1,168 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===== existing Whiteboard (KEEP — do not weaken) =====
+    match /users/{userId}/notes/{noteId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ===== SparkON least-privilege pilot =====
+    // Seats (2–6, start ≥2) client-enforced — not in rules.
+    // Stakes/escrow CF: NOT tonight. Collection create-only; transfers later.
+    // Do NOT weaken users/{userId}/notes/{noteId} above.
+    function signedIn() { return request.auth != null; }
+    function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
+    function roomPath(roomId) {
+      return /databases/$(database)/documents/sparkonRooms/$(roomId);
+    }
+    function roomData(roomId) { return get(roomPath(roomId)).data; }
+    function isRoomHost(roomId) {
+      return signedIn() && roomData(roomId).hostUid == request.auth.uid;
+    }
+    function isMember(roomId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/sparkonRooms/$(roomId)/members/$(request.auth.uid));
+    }
+    function isPairedDisplay(roomId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/sparkonRooms/$(roomId)/displays/$(request.auth.uid));
+    }
+    function revealOpen(roomId) {
+      return roomData(roomId).phase in ['reveal', 'scores', 'finished'];
+    }
+
+    match /sparkonUsers/{uid} {
+      allow read: if isSelf(uid);
+      allow create, update: if isSelf(uid)
+        && (!('entitlements' in request.resource.data)
+            || request.resource.data.entitlements.keys().hasOnly(['premiumTheme', 'heroTheme']));
+      allow delete: if false;
+
+      match /collection/{instanceId} {
+        allow read: if isSelf(uid);
+        allow create: if isSelf(uid)
+          && request.resource.data.conceptId is string
+          && request.resource.data.conceptId != 'pi'
+          && request.resource.data.edition in ['basic', 'standard', 'premium', 'hero'];
+        allow update, delete: if false;
+      }
+    }
+
+    match /sparkonCodes/{code} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['roomId', 'createdAt'])
+        && request.resource.data.roomId is string;
+      allow update, delete: if false;
+    }
+
+    match /sparkonDisplayCodes/{code} {
+      // TVs sign in anonymously (anonymous auth counts as signed in).
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && request.resource.data.status == 'waiting'
+        && request.resource.data.displayId == request.auth.uid
+        && request.resource.data.roomId == null
+        && request.resource.data.keys().hasOnly(['displayId', 'status', 'roomId', 'createdAt', 'expiresAt']);
+      allow update: if signedIn()
+        && resource.data.status == 'waiting'
+        && request.resource.data.status == 'paired'
+        && request.resource.data.roomId is string
+        && request.resource.data.displayId == resource.data.displayId;
+      allow delete: if false;
+    }
+
+    match /sparkonRooms/{roomId} {
+      // Get-by-id after a code lookup. No collection listing (signed-in or not).
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && request.resource.data.hostUid == request.auth.uid
+        && request.resource.data.phase == 'lobby';
+      allow update: if signedIn() && request.resource.data.hostUid == resource.data.hostUid && (
+        resource.data.hostUid == request.auth.uid
+        || (
+          isMember(roomId)
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['publicState', 'updatedAt'])
+          && request.resource.data.phase == resource.data.phase
+          && request.resource.data.revision == resource.data.revision
+        )
+      );
+      allow delete: if false;
+
+      match /members/{memberId} {
+        allow read: if signedIn()
+          && (isRoomHost(roomId) || isMember(roomId) || isPairedDisplay(roomId));
+        allow create: if signedIn()
+          && request.auth.uid == memberId
+          && request.resource.data.nickname is string
+          && request.resource.data.approved is bool
+          && request.resource.data.isHost is bool
+          && request.resource.data.ready is bool;
+        allow update: if signedIn() && (
+          (request.auth.uid == memberId
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['ready', 'nickname', 'homeLabel', 'connected', 'lastSeen', 'isGuest']))
+          || (isRoomHost(roomId)
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['approved', 'connected', 'ready', 'nickname']))
+        );
+        allow delete: if false;
+      }
+
+      match /answers/{answerId} {
+        allow read: if signedIn() && (
+          resource.data.uid == request.auth.uid
+          || isRoomHost(roomId)
+          || revealOpen(roomId)
+        );
+        allow create: if signedIn()
+          && request.auth.uid == request.resource.data.uid
+          && answerId == request.resource.data.roundId + '_' + request.auth.uid
+          && request.resource.data.locked == true
+          && request.resource.data.keys().hasOnly(['uid', 'roundId', 'conceptId', 'optionId', 'locked', 'lockedAt']);
+        allow update, delete: if false;
+      }
+
+      match /displays/{displayId} {
+        allow read: if signedIn()
+          && (isRoomHost(roomId) || isMember(roomId)
+              || request.auth.uid == displayId || isPairedDisplay(roomId));
+        allow create: if signedIn() && (
+          isRoomHost(roomId)
+          || (request.auth.uid == displayId
+              && request.resource.data.keys().hasOnly(['pairedAt', 'readOnly', 'label', 'lastSeen']))
+        );
+        allow update: if signedIn() && (
+          isRoomHost(roomId)
+          || (request.auth.uid == displayId
+              && request.resource.data.diff(resource.data).affectedKeys()
+                   .hasOnly(['lastSeen', 'label']))
+        );
+        allow delete: if false;
+      }
+
+      // Public "locked in" markers for answer-count (no answer content).
+      // Doc id is {roundId}_{uid}; written instead of a shared room counter.
+      match /locks/{lockId} {
+        allow read: if signedIn()
+          && (isRoomHost(roomId) || isMember(roomId) || isPairedDisplay(roomId));
+        allow create: if signedIn()
+          && isMember(roomId)
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.roundId is string
+          && lockId == request.resource.data.roundId + '_' + request.auth.uid
+          && request.resource.data.keys().hasOnly(['uid', 'roundId', 'at']);
+        allow update, delete: if false;
+      }
+    }
+
+    match /users/{uid}/sparkon/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}

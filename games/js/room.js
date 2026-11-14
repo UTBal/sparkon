@@ -314,6 +314,9 @@ export function watchRoom(roomId, handlers) {
   unsubs.push(f.onSnapshot(f.collection(db, ROOMS, roomId, 'members'), (snap) => {
     handlers.onMembers?.(snap.docs.map(d => ({ id: d.id, ...d.data() })));
   }, (err) => handlers.onError?.(err)));
+  unsubs.push(f.onSnapshot(f.collection(db, ROOMS, roomId, 'locks'), (snap) => {
+    handlers.onLocks?.(snap.docs.map(d => d.data()));
+  }, (err) => handlers.onError?.(err)));
   unsubs.push(f.onSnapshot(f.collection(db, ROOMS, roomId, 'displays'), (snap) => {
     handlers.onDisplays?.(snap.docs.map(d => ({ id: d.id, ...d.data() })));
   }, (err) => handlers.onError?.(err)));
@@ -376,12 +379,8 @@ export async function submitAnswer(roomId, roundId, { conceptId, optionId }) {
       locked: true,
       lockedAt: f.serverTimestamp()
     });
-    const ps = { ...(r.publicState || {}) };
-    ps.answeredCount = (ps.answeredCount || 0) + 1;
-    tx.update(roomRef, {
-      publicState: ps,
-      updatedAt: f.serverTimestamp()
-    });
+    // Own "locked in" marker (no answer content). No shared counter on the room doc.
+    tx.set(f.doc(db, ROOMS, roomId, 'locks', answerId), { uid, roundId, at: f.serverTimestamp() });
   });
   return answerId;
 }

@@ -248,9 +248,7 @@ function renderRound() {
     $('revealPanel').classList.add('hide');
     $('waitPanel').classList.remove('hide');
     const players = members.filter(m => m.approved).length;
-    const count = isHost()
-      ? answers.filter(a => a.roundId === room.roundId && a.locked).length
-      : (room.publicState?.answeredCount ?? answers.filter(a => a.roundId === room.roundId && a.locked).length);
+    const count = (window.__sparkonLocks || []).filter(l => l.roundId === room.roundId).length;
     const cards = cardsById();
     $('waitPanel').innerHTML = myLocked
       ? `<p>Submitted · you chose <strong>${escape(cards[myAns.conceptId]?.title || myAns.conceptId)}</strong> · option ${escape(myAns.optionId)}</p>
@@ -429,6 +427,7 @@ function attachWatch(roomId) {
     onMembers: (m) => { members = m; onState(); },
     onDisplays: (d) => { displays = d; if (room?.phase === 'lobby') renderLobby(); },
     onAnswers: (a) => { answers = a; onState(); },
+    onLocks: (l) => { window.__sparkonLocks = l; if (room && room.phase !== 'lobby') onState(); },
     onError: () => $('reconnect').classList.remove('hide')
   });
   try { markConnected(roomId, currentPlayerId()); } catch { /* not signed in yet */ }

@@ -1,21 +1,23 @@
 # SparkON Firestore rules — deny/allow cases
 
-**Source of truth:** `firestore.rules.merged` (Whiteboard notes keep + SparkON least-privilege).  
-**Snippet:** `firestore.rules.snippet` (paste section only).  
-**Deploy:** Alex/Builder must publish in Firebase Console on `board-18d33`. This box cannot deploy.
+**Source of truth:** `rules/merged.rules` (copied to `games/firestore.rules.merged`). Whiteboard `users/{userId}/notes` and `users/{uid}/sparkon` kept as-is.  
+**Snapshot of what is live today:** `rules/deployed.rules` (board-18d33, 2026-11-14).  
+**Snippet:** `games/firestore.rules.snippet` (paste section only, alongside Whiteboard notes).  
+**Deploy:** publish `rules/merged.rules` in the Firebase Console on `board-18d33`. This box does not publish or deploy.
 
-## Emulator status (2026-09-29)
+## Emulator status (2026-11-14)
 
 - `firebase` CLI is present (`13.35.1`).
-- **Java/JRE is not available** on the box (`java: command not found`; apt mirror 500), so `firebase emulators:exec` / `@firebase/rules-unit-testing` cannot run here.
-- Static checks: `node games/rules-tests/validate-rules.js` (structure + required deny markers).
-- When Java is available: `cd games/rules-tests && npm i && npm test` (uses emulator + rules-unit-testing).
+- Static checks: `node games/rules-tests/validate-rules.js`.
+- Emulator suite: from `games/rules-tests`, `npm i && npm test` (needs a JRE on `PATH`, then `firebase emulators:exec`). All added deny/allow cases passed on 14 Nov 2026.
 
 ## Negative cases (must DENY)
 
 | # | Actor | Op | Path | Why |
 |---|-------|----|------|-----|
-| N1 | unauthenticated | read | `sparkonRooms/{id}` | `signedIn()` required |
+| N1 | unauthenticated | get or list | `sparkonRooms` / `{id}` | signed-in get-by-id only; no list |
+| N1b | unauthenticated | get or list | `sparkonCodes` / `sparkonDisplayCodes` | signed-in get-by-id only; no list |
+| N1c | signed-in, not a member | list | `sparkonRooms` or code directories | `allow list: if false` |
 | N2 | unauthenticated | create | `sparkonCodes/{code}` | create requires auth |
 | N3 | auth A | create | `sparkonRooms/{id}` with `hostUid=B` | hostUid must be auth.uid |
 | N4 | auth A (not host) | update | `sparkonRooms/{id}` phase/scores | host-only room advances |
@@ -29,6 +31,8 @@
 | N12 | auth A | update/delete | `sparkonUsers/{A}/collection/{id}` | no update/delete |
 | N13 | any | read/write | `users/{uid}/notes/{noteId}` as other uid | Whiteboard keep |
 | N14 | auth A | update | `sparkonDisplayCodes/{code}` waiting→paired changing `displayId` | displayId immutable |
+| N15 | unauthenticated | create/read | `sparkonRooms/{id}/locks/{id}` | signed-in members only |
+| N16 | member A | create | `locks/{round}_{B}` or lock with `uid=B` | self id only |
 
 ## Positive cases (must ALLOW)
 
@@ -40,11 +44,12 @@
 | P4 | host | update | `members/{other}.approved` |
 | P5 | self | update | own `ready` / `nickname` / `connected` |
 | P6 | self | create | locked own answer `{roundId}_{uid}` |
+| P6b | member | create | `locks/{roundId}_{uid}` (count marker, no answer content) |
 | P7 | host / reveal phase | read | all answers |
 | P8 | anon TV | create | `sparkonDisplayCodes` status=waiting, `displayId==auth.uid` |
 | P9 | host | update | display code waiting→paired + create `displays/{displayId}` |
 | P10 | paired TV | update | own `displays/{uid}.lastSeen` |
-| P11 | member | update | room `publicState` + `updatedAt` only (answeredCount bump) |
+| P11 | member / host / paired TV | read | `locks` in their room |
 
 ## Client alignment (JS)
 
@@ -52,4 +57,6 @@
 - `hostUid` / member ids / `displayId` = `auth.uid` (never `guest-*`).
 - TV: sessionStorage bind `{displayId,roomId,status:'paired'}`; resume skips new code.
 - Host: Pair TV in lobby **and** during play (`phase != finished`).
-- Answers watch: host/reveal → collection; else `where('uid','==',self)`. Counts via `publicState.answeredCount`.
+- Answers watch: host/reveal → collection; else `where('uid','==',self)`.
+- Answer counts come from `sparkonRooms/{id}/locks` snapshots, not a shared `publicState.answeredCount` write.
+- Guests use `browserLocalPersistence` so a new tab keeps the same anonymous seat.

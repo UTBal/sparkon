@@ -50,7 +50,7 @@ function showBoard(room, members, answers) {
     $('prompt').textContent = round?.prompt || '';
     const players = members.filter(m => m.approved).length;
     // Prefer publicState (reveal-gated answers — TV cannot list others' answers mid-round)
-    const count = room.publicState?.answeredCount ?? answers.filter(a => a.roundId === room.roundId && a.locked).length;
+    const count = (window.__sparkonLocks || []).filter(l => l.roundId === room.roundId).length;
     extra.textContent = phase === 'locked'
       ? `Answers locked · ${count} / ${players} submitted`
       : `Answer on your phones · ${count} / ${players} submitted`;
@@ -144,6 +144,7 @@ function attachRoomWatch(roomId, displayId) {
       }
     },
     onAnswers: (a) => { answers = a; if (room) showBoard(room, members, answers); },
+    onLocks: (l) => { window.__sparkonLocks = l; if (room) showBoard(room, members, answers); },
     onError: (err) => {
       $('reconnect').classList.remove('hide');
       console.warn(err);

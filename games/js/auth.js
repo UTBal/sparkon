@@ -104,7 +104,8 @@ export async function signIn() {
 export async function signInAnonymously() {
   await whenReady();
   if (initError || !auth || !a) throw new Error(formatInitError(initError));
-  await a.setPersistence(auth, a.browserSessionPersistence);
+  // Local persistence so a guest keeps the same seat in a new tab.
+  await a.setPersistence(auth, a.browserLocalPersistence);
   if (auth.currentUser) return auth.currentUser;
   const cred = await a.signInAnonymously(auth);
   return cred.user;

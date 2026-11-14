@@ -50,7 +50,8 @@ service cloud.firestore {
     }
 
     match /sparkonCodes/{code} {
-      allow read: if true;
+      allow get: if signedIn();
+      allow list: if false;
       allow create: if signedIn()
         && request.resource.data.keys().hasOnly(['roomId', 'createdAt'])
         && request.resource.data.roomId is string;
@@ -58,7 +59,9 @@ service cloud.firestore {
     }
 
     match /sparkonDisplayCodes/{code} {
-      allow read: if signedIn() || resource.data.status == 'waiting';
+      // TVs sign in anonymously (anonymous auth counts as signed in).
+      allow get: if signedIn();
+      allow list: if false;
       allow create: if signedIn()
         && request.resource.data.status == 'waiting'
         && request.resource.data.displayId == request.auth.uid
@@ -73,7 +76,9 @@ service cloud.firestore {
     }
 
     match /sparkonRooms/{roomId} {
-      allow read: if signedIn();
+      // Get-by-id after a code lookup. No collection listing (signed-in or not).
+      allow get: if signedIn();
+      allow list: if false;
       allow create: if signedIn()
         && request.resource.data.hostUid == request.auth.uid
         && request.resource.data.phase == 'lobby';
@@ -139,6 +144,20 @@ service cloud.firestore {
                    .hasOnly(['lastSeen', 'label']))
         );
         allow delete: if false;
+      }
+
+      // Public "locked in" markers for answer-count (no answer content).
+      // Doc id is {roundId}_{uid}; written instead of a shared room counter.
+      match /locks/{lockId} {
+        allow read: if signedIn()
+          && (isRoomHost(roomId) || isMember(roomId) || isPairedDisplay(roomId));
+        allow create: if signedIn()
+          && isMember(roomId)
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.roundId is string
+          && lockId == request.resource.data.roundId + '_' + request.auth.uid
+          && request.resource.data.keys().hasOnly(['uid', 'roundId', 'at']);
+        allow update, delete: if false;
       }
     }
 
