@@ -4,7 +4,8 @@
   "type": "commonjs",
   "scripts": {
     "validate": "node validate-rules.js",
-    "test": "node validate-rules.js && firebase --config ../../firebase.json emulators:exec --only firestore --project sparkon-rules-test \"node rules.emulator.test.js\""
+    "test": "node validate-rules.js && firebase --config ../../firebase.json emulators:exec --only firestore --project sparkon-rules-test \"node rules.emulator.test.js\"",
+    "test:flow": "firebase --config ../../firebase.flow.json emulators:exec --only auth,firestore --project demo-sparkon \"node flow/join-flow.emulator.mjs\""
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^4.0.1",

@@ -139,8 +139,16 @@ export async function requestJoin({ code, nickname, homeLabel = '' } = {}) {
   if (!roomSnap.exists()) throw new Error('Room no longer exists.');
   const room = roomSnap.data();
   if (room.phase !== 'lobby') throw new Error('This room has already started.');
-  const membersSnap = await f.getDocs(f.collection(db, ROOMS, roomId, 'members'));
-  const members = membersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  // R1 rules only let members/host/displays read the members list. A first-time
+  // joiner is not a member yet, so the list is denied: treat that as "new joiner"
+  // and create our own member doc. Seat cap is enforced again by approveMember (host).
+  let members = [];
+  try {
+    const membersSnap = await f.getDocs(f.collection(db, ROOMS, roomId, 'members'));
+    members = membersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) {
+    if (e?.code !== 'permission-denied') throw e;
+  }
   const approved = members.filter(m => m.approved);
   const uid = currentPlayerId();
   const existing = members.find(m => m.id === uid);
@@ -369,8 +377,9 @@ export async function submitAnswer(roomId, roundId, { conceptId, optionId }) {
     if (r.roundId !== roundId) throw new Error('Wrong round.');
     const member = await tx.get(f.doc(db, ROOMS, roomId, 'members', uid));
     if (!member.exists() || !member.data().approved) throw new Error('Not an approved member.');
-    const existing = await tx.get(ref);
-    if (existing.exists() && existing.data().locked) throw new Error('Already submitted.');
+    // No tx.get(ref): R1 rules deny reading a not-yet-existing own answer before reveal.
+    // Duplicates are still impossible: answers are create-only (update: false), so a
+    // second set on the same {roundId}_{uid} id is rejected and the whole tx fails.
     tx.set(ref, {
       uid,
       roundId,
@@ -381,6 +390,9 @@ export async function submitAnswer(roomId, roundId, { conceptId, optionId }) {
     });
     // Own "locked in" marker (no answer content). No shared counter on the room doc.
     tx.set(f.doc(db, ROOMS, roomId, 'locks', answerId), { uid, roundId, at: f.serverTimestamp() });
+  }).catch((e) => {
+    if (e?.code === 'permission-denied') throw new Error('Already submitted.');
+    throw e;
   });
   return answerId;
 }
