@@ -1,0 +1,81 @@
+// Snapshot of live board-18d33 Firestore rules, 2026-11-14.
+// Pretty-printed only; no logic changes.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===== existing Whiteboard (KEEP — do not weaken) =====
+    match /users/{userId}/notes/{noteId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ===== SparkON pilot (isolated collection roots) =====
+    function signedIn() { return request.auth != null; }
+    function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
+
+    // Profile + entitlements (UID-owned)
+    match /sparkonUsers/{uid} {
+      allow read: if isSelf(uid);
+      allow create, update: if isSelf(uid)
+        && (!('entitlements' in request.resource.data)
+            || request.resource.data.entitlements.keys().hasOnly(['premiumTheme','heroTheme']));
+      allow delete: if false;
+
+      match /collection/{instanceId} {
+        allow read: if isSelf(uid);
+        // Pilot client mint — NOT production-safe (RNG on client)
+        allow create: if isSelf(uid)
+          && request.resource.data.conceptId is string
+          && request.resource.data.conceptId != 'pi'
+          && request.resource.data.edition in ['basic','premium','hero'];
+        allow update, delete: if false;
+      }
+    }
+
+    // Room code directory
+    match /sparkonCodes/{code} {
+      allow read: if true;
+      allow create: if true; // guests allowed in pilot
+      allow update, delete: if false;
+    }
+
+    match /sparkonDisplayCodes/{code} {
+      allow read: if true;
+      allow create, update: if true; // TV pairing (no auth on TV)
+      allow delete: if false;
+    }
+
+    match /sparkonRooms/{roomId} {
+      allow read: if true; // pilot: code secrecy is discovery control; tighten later
+      allow create: if true;
+      // Host advances phase/scores — HOST-TRUSTED pilot
+      allow update: if resource.data.hostUid == request.auth.uid
+        || resource.data.hostUid == request.resource.data.hostUid
+        || request.resource.data.hostUid == resource.data.hostUid;
+      allow delete: if false;
+
+      match /members/{memberId} {
+        allow read: if true;
+        allow create, update: if true; // pilot
+        allow delete: if false;
+      }
+      match /answers/{answerId} {
+        allow read: if true;
+        allow create: if true
+          && request.resource.data.locked == true;
+        allow update, delete: if false; // lock once
+      }
+      match /displays/{displayId} {
+        allow read: if true;
+        allow create, update: if true;
+        allow delete: if false;
+      }
+    }
+
+    // Optional alternate collection root (still never notes)
+    match /users/{uid}/sparkon/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
